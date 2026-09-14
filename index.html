@@ -111,6 +111,51 @@
   .wsmulti label{display:flex;align-items:center;gap:6px}
   .wsmulti input{width:18px;height:18px;accent-color:var(--accent)}
   .wsjson{width:100%;min-height:190px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.4;border:1.5px solid var(--line);border-radius:10px;padding:10px;background:#F8FAFB;color:var(--ink);resize:vertical}
+  .wide{max-width:100%}
+  .padded{padding:10px}
+  .pills{display:flex;flex-wrap:wrap;gap:6px}
+  .pill{appearance:none;border:1.5px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 11px;font:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer}
+  .pill[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+  .hqdot{cursor:pointer}
+  .stack{margin:0;padding-left:20px;display:grid;gap:6px}
+  .scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .matrix{border-collapse:collapse;font-size:13px;min-width:640px;width:100%}
+  .matrix th,.matrix td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+  .matrix th:first-child,.matrix td:first-child{text-align:left;font-weight:700}
+  .matrix th{color:var(--muted);font-weight:700;font-size:12px}
+  .matrix i{display:inline-block;width:12px;height:12px;border-radius:50%}
+  .switch{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;color:var(--muted)}
+  .switch input{position:absolute;opacity:0;width:0;height:0}
+  .switch span{width:46px;height:26px;border-radius:13px;background:var(--line);position:relative;flex:none;transition:background .2s}
+  .switch span::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s}
+  .switch input:checked + span{background:var(--accent)}
+  .switch input:checked + span::after{transform:translateX(20px)}
+  .switch input:focus-visible + span{outline:3px solid var(--focus)}
+  .flow{display:grid;gap:8px}
+  .flowstep{background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:38px 1fr;gap:2px 10px;align-items:center}
+  .flowstep.rob{border-color:var(--accent)}
+  .flowicon{grid-row:1/4;width:38px;height:38px}
+  .flowicon svg{width:100%;height:100%}
+  .flowname{font-weight:700}
+  .flowdesc{font-size:14px;color:var(--muted)}
+  .flowtime{font-size:13px;font-weight:700}
+  .cmpwrap{display:grid;gap:10px}
+  .cmp-l{font-size:13px;color:var(--muted);margin-bottom:3px}
+  .cmp-bars{display:grid;gap:3px}
+  .cmp-bar{height:20px;border-radius:5px;min-width:2px;position:relative;transition:width .25s}
+  .cmp-bar.ded{background:#8A98A4}.cmp-bar.flex{background:var(--accent)}
+  .cmp-bar span{position:absolute;left:100%;margin-left:6px;top:0;font-size:12px;white-space:nowrap;color:var(--ink)}
+  .cmp-bars{padding-right:110px}
+  .strip{display:grid;grid-template-columns:76px 1fr;align-items:center;gap:8px;font-size:13px}
+  .strip div{position:relative;height:16px;border-radius:4px;background:#F2F5F7;overflow:hidden}
+  .strip i{position:absolute;top:0;height:100%}
+  .strip i.co{background:#E6583C}.strip i.pr{background:#22B36A}
+  .rungs{display:grid;gap:6px}
+  .rung{appearance:none;text-align:left;border:1.5px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 12px;font:inherit;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer;display:flex;gap:10px;align-items:center}
+  .rung b{width:22px;height:22px;border-radius:50%;background:var(--line);display:inline-grid;place-items:center;font-size:12px;flex:none}
+  .rung[aria-pressed="true"]{border-color:var(--accent)}
+  .rung[aria-pressed="true"] b{background:var(--accent);color:#fff}
+  .split-inner{display:grid;gap:12px}
   .pane{display:contents}
   @media (max-width:899px){
     #s-load h2{order:1} #s-load .stage{order:2} #s-load .caption{order:3} #s-load .controls{order:4} #s-load #btnSkipLoad{order:5}
@@ -141,6 +186,11 @@
     .specs{grid-template-columns:repeat(3,1fr)}
     .note{right:36px;left:auto;max-width:460px;border-radius:16px 16px 0 0}
     .nblist{grid-template-columns:1fr 1fr}
+    .wide{max-width:1000px;margin:0 auto;width:100%}
+    .rungs{grid-template-columns:repeat(5,1fr)}
+    .split-inner{grid-template-columns:320px 1fr;align-items:start}
+    .flow{grid-template-columns:1fr 1fr}
+    #s-industry .controls,#s-robotics .controls{grid-template-columns:1fr 1fr}
     .wslist{grid-template-columns:1fr 1fr}
     .wsfields{grid-template-columns:1fr 1fr;column-gap:18px}
     .wsjson{min-height:240px}
@@ -169,6 +219,8 @@
     <button class="chapter" id="btnCh1" type="button"><span class="chapter-name">Run the prober</span><span class="chapter-grade" id="ch1Grade"></span><span class="chapter-sub">Four chips, three probe cards. Match them, load the wafer, catch the bad dies.</span></button>
     <button class="chapter" id="btnCh2" type="button"><span class="chapter-name">Build a probe card</span><span class="chapter-grade" id="ch2Grade"></span><span class="chapter-sub">Design the spring, grow it with lithography, let the robots assemble it, measure every tip.</span></button>
     <button class="chapter" id="btnNotes" type="button"><span class="chapter-name">Field notebook</span><span class="chapter-grade"></span><span class="chapter-sub" id="nbCount"></span></button>
+    <button class="chapter" id="btnIndustry" type="button"><span class="chapter-name">The industry</span><span class="chapter-grade"></span><span class="chapter-sub">Who makes probe cards, where, how big, and with what technology. Map, revenue, tech stack.</span></button>
+    <button class="chapter" id="btnRobotics" type="button"><span class="chapter-name">The robotics case</span><span class="chapter-grade"></span><span class="chapter-sub">Why flexible robotics, not another dedicated cell, decides who ships the next design first. Interactive.</span></button>
     <button class="chapter" id="btnWorkshop" type="button"><span class="chapter-name">Workshop</span><span class="chapter-grade"></span><span class="chapter-sub" id="wsCount"></span></button>
     </div>
   </section>
@@ -178,6 +230,93 @@
     <p class="caption">Tap a note to read it again. The locked ones are still out there in the game.</p>
     <div class="nblist" id="noteList"></div>
     <button id="btnNotesHome" class="btn ghost" type="button">Back home</button>
+  </section>
+
+  <section id="s-industry" class="screen wide hidden">
+    <h2>Who makes probe cards</h2>
+    <p>A small industry with outsized leverage: every advanced chip made anywhere crosses one of these companies' products before it is packaged. The market was worth roughly US$2.5 to 3.3 billion in 2025 depending on who counts, three companies take about 60% of it, and MEMS cards are most of the value. Tap a dot.</p>
+    <div class="stage" id="indMap"></div>
+    <div class="legend" id="indLegend"></div>
+    <div class="pills" id="indChips"></div>
+    <div class="panel">
+      <h3 id="coName"></h3>
+      <p class="caption" id="coMeta"></p>
+      <dl class="specs">
+        <div><dt>Latest revenue</dt><dd id="coRev"></dd></div>
+        <div><dt>Main technology</dt><dd id="coTech"></dd></div>
+        <div><dt>Segments</dt><dd id="coSeg"></dd></div>
+      </dl>
+      <p class="caption">Tech stack</p>
+      <ul class="stack" id="coStack"></ul>
+      <p id="coNotes"></p>
+    </div>
+    <h3>Revenue, latest fiscal year</h3>
+    <div class="stage padded" id="indBars"></div>
+    <p class="caption">Converted to US dollars at rough 2026 rates. Faint bars are estimates. Private companies and divisions of larger groups don't publish a figure.</p>
+    <h3>Technology and market coverage</h3>
+    <div class="scrollx" id="indMatrix"></div>
+    <h3>What moves the market</h3>
+    <ul class="stack">
+      <li>HBM and AI accelerators. Both need full-wafer or near-full-wafer cards with tens of thousands of tips, and both refresh every year. FormFactor's record 2025, Technoprobe's 2026 guidance and MJC's +42% forecast all cite the same driver.</li>
+      <li>Pitch. Micro-bumps under 40 µm make cantilever cards physically impossible and push value to MEMS and vertical technologies, where a handful of companies hold the process know-how.</li>
+      <li>Geography. Demand sits in Taiwan, Korea, Japan and the US; export controls have cut Chinese revenue for the majors and opened room for domestic Chinese suppliers on mature nodes.</li>
+      <li>Lead time. A probe card is built for one design, and a fab cannot ramp a product until it arrives. Whoever turns a new design into a qualified card fastest wins the socket. The next page is about that.</li>
+    </ul>
+    <p class="caption">Sources: company annual reports and earnings releases for 2025 (FormFactor 10-K, Technoprobe annual financial report, MJC and JEM filings, MPI results briefing), TechInsights customer surveys, and 2025–26 market reports from Mordor Intelligence and others. Figures marked ~ are estimates. Check before quoting.</p>
+    <button id="btnIndRobotics" class="btn" type="button">Next: the robotics case</button>
+    <button id="btnIndHome" class="btn ghost" type="button">Back home</button>
+  </section>
+
+  <section id="s-robotics" class="screen wide hidden">
+    <h2>The robotics case</h2>
+    <p>Here is the argument. Probe cards are getting denser (tens of thousands of springs at pitches a human hand cannot work) and design cadence is getting faster (a new AI accelerator every year, chiplets every quarter). Yet much of the industry still builds cards with skilled hands and with pick-and-place cells that were engineered for one product family. Every new design means new fixtures, new motion code and weeks of requalification. Flexible robotics changes the unit of work from "build a cell for this card" to "load a recipe for this card". The company that makes that switch first ships new designs sooner, wins the socket, and compounds the advantage. Play with the models below and see whether you agree.</p>
+
+    <h3>Where the hands still are</h3>
+    <label class="switch"><input type="checkbox" id="robToggle"><span></span><b>Today</b> → <b>With flexible robotics</b></label>
+    <div class="flow" id="robFlow"></div>
+    <p class="caption" id="robFlowTotal"></p>
+
+    <h3>Changeover is the hidden cost</h3>
+    <p class="caption">Two cells, same floor space, same operators. The dedicated cell retools for three weeks per new design; the flexible cell loads a recipe generated from the card's design file in a day. Slide the number of new designs.</p>
+    <div class="controls">
+      <label class="wsf"><span id="robDesignsOut"></span><input id="robDesigns" class="range" type="range" min="4" max="60" step="1" value="10" aria-label="New designs per year"></label>
+      <label class="wsf"><span id="robVolumeOut"></span><input id="robVolume" class="range" type="range" min="2" max="40" step="1" value="12" aria-label="Cards per day"></label>
+    </div>
+    <div class="cmpwrap" id="robCmp"></div>
+    <div class="legend"><span><i style="background:#8A98A4"></i>dedicated cell</span><span><i style="background:#0F7F8B"></i>flexible robotic cell</span></div>
+    <p class="caption">A year on the floor. Red is retooling, green is building.</p>
+    <div class="strip"><b>Dedicated</b><div id="robStripA"></div></div>
+    <div class="strip"><b>Flexible</b><div id="robStripB"></div></div>
+    <p id="robVerdict"></p>
+
+    <h3>The automation ladder</h3>
+    <div class="rungs" id="robRungs"></div>
+    <div class="split-inner">
+      <div class="stage padded" id="rungRadar"></div>
+      <div class="panel"><h3 id="rungName"></h3><p id="rungDesc"></p><p class="caption" id="rungCo"></p><p class="caption">Technology: <span id="rungTech"></span></p></div>
+    </div>
+
+    <h3>Why the early mover keeps winning</h3>
+    <p class="caption">Two identical companies. Each invests a share of revenue in flexible automation every year. Investment shortens the new-product cycle; a shorter cycle wins more designs; more designs mean more revenue and more data for the next cells. Illustrative model.</p>
+    <div class="controls">
+      <label class="wsf"><span>Company A: <b id="robInvAOut"></b></span><input id="robInvA" class="range" type="range" min="0" max="8" step="0.5" value="4" aria-label="Company A investment"></label>
+      <label class="wsf"><span>Company B: <b id="robInvBOut"></b></span><input id="robInvB" class="range" type="range" min="0" max="8" step="0.5" value="1" aria-label="Company B investment"></label>
+    </div>
+    <div class="stage padded" id="robRace"></div>
+    <div class="legend"><span><i style="background:#0F7F8B"></i>company A</span><span><i style="background:#F0B43C"></i>company B</span></div>
+    <p id="robRaceOut"></p>
+
+    <h3>What "modern robotics" actually means here</h3>
+    <ul class="stack">
+      <li><b>Precision arms and cobots with vision and force control.</b> Small six-axis arms place springs within microns; cobots and mobile robots move magazines and substrates so people never carry parts.</li>
+      <li><b>One software platform for every cell.</b> Behaviour-tree orchestration, a simulated digital twin for bring-up, fleet management and observability, and CI/CD for the cell code, so a new cell is configured, not written.</li>
+      <li><b>Recipes generated from the design.</b> The card's own design file becomes the placement program. No fixture drawings, no hand-taught points.</li>
+      <li><b>AI inspection in the loop.</b> Anomaly-detection models on every tip and every probe mark, feeding back into the process instead of a rework queue.</li>
+      <li><b>Learned policies for the messy parts.</b> Vision-language-action models for handling variation: a bent spring, a new tray, a tip geometry that did not exist last quarter.</li>
+    </ul>
+    <p class="caption">This page argues a position. The numbers in the models are illustrative, chosen to show the shape of the trade-off rather than any company's actual data. Disagree in the comments; that is the point.</p>
+    <button id="btnRobIndustry" class="btn ghost" type="button">Back to the industry map</button>
+    <button id="btnRobHome" class="btn ghost" type="button">Back home</button>
   </section>
 
   <section id="s-workshop" class="screen center hidden">
@@ -1620,6 +1759,235 @@ $('btnBuildShare').addEventListener('click', async () => {
   const text = `${B.summary} Can you do better? ${location.href}`;
   try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); $('btnBuildShare').textContent = 'Copied to clipboard'; } } catch (e) { /* cancelled */ }
 });
+
+/* =====================================================================
+   The industry: who makes probe cards
+   Figures: company filings and reports for the latest fiscal year; ~ marks
+   an estimate, n/d means not disclosed. Edit COMPANIES to update.
+   ===================================================================== */
+const LAND_PATH = 'M449 551l5 3l6 1l-2 2l-4 0l-2 -1l-1 1l-4 1l-4 0l-3 -1l-4 -1l-5 -2l-4 -2l-6 -5l4 1l5 3l6 1l2 -2l1 -2l4 -2l2 1l2 1l2 3zM486 540l3 2l-1 2l-6 1l-1 -2l-4 2l-2 -2l5 -2l3 1l3 -2zM1001 535l-6 0l0 -2l0 -2l1 -1l2 2l4 0l0 1l-1 2zM1302 499l3 2l3 -1l3 -1l2 0l0 5l-1 2l0 3l-2 -1l-3 3l0 -1l-3 0l-2 -3l-1 -3l-2 -3l0 -2l3 0zM1412 500l1 1l3 -1l1 1l0 2l-1 2l-3 3l-2 1l1 2l-3 0l-3 2l-1 3l-3 4l-3 1l-2 2l-3 -1l-3 -1l-4 0l-1 -2l2 -3l5 -4l3 0l3 -2l3 -2l3 -2l1 -3l2 -1l0 -2l3 -2l1 2zM1418 481l3 4l0 -3l2 1l1 3l3 2l3 0l2 -2l2 1l-1 3l-1 3l-3 0l-1 1l0 2l-2 2l-2 3l-3 2l-1 -1l-1 -1l2 -3l-1 -2l-5 -2l0 -1l3 -2l1 -3l0 -2l-2 -3l0 -1l-2 -2l-3 -3l-1 -3l1 0l2 2l3 1l1 4zM1388 425l-1 1l-2 -1l-3 -2l-3 -2l-2 -3l-1 -2l2 0l2 2l2 1l1 1l3 3l2 2zM1433 405l2 2l-1 2l-2 0l-2 0l-1 -2l2 -1l1 0l1 -1zM0 402l1437 1l-2 1l-1 -1l2 -1l2 0l-1438 -2l1 0l-1 2zM1391 402l-1 0l-1 -1l0 -1l2 2zM1388 396l1 3l-1 -1l-1 1l0 -1l0 -3l1 1zM920 390l1 5l1 2l0 2l-1 1l-2 -2l0 1l0 3l0 1l-1 1l0 4l-2 4l-2 6l-2 8l-2 5l-2 5l-3 1l-3 1l-3 -1l-3 -1l-1 -2l0 -4l-2 -3l0 -3l1 -3l2 0l0 -2l2 -3l0 -2l-1 -2l-1 -3l0 -3l1 -3l1 -2l2 0l2 -1l1 -1l2 0l3 -2l3 -3l1 -2l-1 -1l2 0l2 -3l0 -2l2 -2l1 2l1 2l1 2zM1294 391l2 3l2 -1l2 1l1 2l0 2l1 3l1 2l1 1l1 3l-1 2l2 3l4 2l3 2l2 2l0 1l2 2l2 4l1 -1l2 2l1 0l1 4l2 2l2 2l3 3l2 3l0 3l-1 2l2 3l0 4l-1 2l-1 3l0 3l0 3l-2 3l-3 2l-2 3l-1 2l-1 4l-2 2l-1 3l0 2l0 2l-2 1l-5 0l-3 2l-2 1l-3 2l-3 -2l-2 0l0 -2l-2 0l-4 3l-3 -1l-2 0l-3 -1l-3 -1l-3 -2l-1 -3l-1 -2l-2 -2l-4 -1l2 -1l-1 -3l-2 2l-4 1l2 -2l1 -2l2 -2l-1 -3l-3 3l-3 1l-1 4l-3 -2l0 -2l-3 -3l-2 -2l1 -1l-5 -2l-3 0l-4 -2l-7 0l-5 2l-5 1l-3 0l-5 2l-3 1l-1 2l-1 2l-4 0l-2 0l-4 -1l-3 1l-2 0l-3 2l-1 0l-2 1l-2 1l-3 0l-3 0l-4 -2l-2 -1l0 -3l2 0l1 -1l0 -1l0 -3l0 -3l-2 -4l-1 -2l0 -2l-1 -3l-1 -1l-1 -2l-1 -3l-2 -3l-1 -2l2 2l-1 -4l2 2l1 1l0 -2l-2 -3l0 -1l-1 -1l0 -3l1 -1l0 -2l0 -2l2 -3l0 3l2 -3l3 -1l2 -2l3 -1l2 -1l1 1l3 -2l2 0l1 -1l1 0l2 0l4 -1l3 -2l1 -2l2 -2l0 -2l0 -2l3 -3l2 3l1 -1l-1 -2l1 -2l2 1l1 -3l2 -2l1 -1l2 -1l0 -1l2 0l0 -1l1 0l2 -1l3 2l2 2l3 1l2 0l0 -2l2 -4l1 -1l0 -1l1 -2l3 -1l2 0l3 -1l0 -2l-3 -1l2 0l3 1l2 1l4 1l1 0l2 1l3 -1l1 0l1 -1l2 2l-1 3l-2 1l-1 0l0 2l-1 2l-1 2l0 1l3 2l3 1l2 2l3 2l1 0l2 1l1 1l4 2l2 -2l1 -2l1 -1l1 -3l1 -3l-1 -2l1 -1l-1 -2l1 -3l0 -1l0 -1l1 -2l0 -3l1 -1l1 -1l1 2l0 2l1 1l1 1l1 2l0 3l0 1zM1368 378l2 1l-3 0l-2 -2l3 1zM1203 377l-2 0l-5 -3l4 -1l2 2l1 1l0 1zM1363 375l-1 1l-3 -1l0 -2l2 1l2 0l0 1zM1367 374l-1 1l-3 -3l-1 -3l2 0l1 3l2 2zM1218 377l-4 0l0 -1l2 -3l4 -1l0 -1l4 -1l3 0l1 -1l1 1l-1 1l-4 1l-4 2l-2 3zM1192 368l1 1l3 0l1 2l-5 1l-3 0l-2 0l1 -2l3 0l1 -2zM1212 368l-1 3l-6 1l-5 -1l0 -1l3 -1l2 1l3 0l4 -2zM1360 369l0 1l-3 -2l-3 -1l-1 -1l0 -1l2 1l4 2l1 1zM1350 365l-1 1l-1 -1l-2 -2l0 -1l3 2l1 1zM1154 363l8 1l1 -2l7 2l2 2l6 1l5 2l-5 2l-4 -2l-4 1l-4 -1l-4 -1l-4 -1l-3 0l-2 0l-7 -2l-1 -1l-4 -1l3 -3l5 0l3 1l2 1l0 1zM1259 361l-2 3l-1 -3l1 -2l1 -1l1 1l0 2zM1344 363l-2 1l-1 -2l-2 -2l-1 -3l1 -1l0 1l1 1l2 3l2 1l0 1zM1328 358l-2 0l-1 1l-2 1l-2 1l-2 0l-3 -1l-3 -1l1 -1l3 0l2 0l1 -2l1 0l0 2l2 0l1 -2l3 -1l-1 -2l3 0l0 2l-1 3zM1229 350l-2 1l-2 -1l-1 -1l4 0l1 1zM1242 348l1 3l-3 -1l-3 -1l-3 1l-2 0l1 -3l4 0l5 1zM1333 354l-2 1l0 -2l-1 -2l-2 -1l-2 -2l-3 -1l1 -1l2 1l1 1l2 1l2 2l1 1l1 2zM1257 341l1 6l4 2l3 -4l5 -2l3 0l4 1l3 2l4 0l7 3l7 2l3 2l2 3l1 2l7 2l1 2l-4 1l1 3l3 2l3 4l2 0l0 2l3 1l-1 0l4 2l0 1l-3 1l-1 -1l-3 -1l-4 0l-3 -3l-3 -2l-2 -4l-5 -1l-3 1l-3 1l1 3l-3 1l-3 0l-4 -1l-3 -3l-4 -1l-1 2l-6 0l2 -4l3 -1l-1 -4l-2 -3l-8 -4l-3 0l-6 -4l-2 2l-1 0l-1 -1l0 -2l-3 -2l4 -1l3 0l0 -1l-6 0l-2 -3l-3 0l-2 -2l5 -1l3 -2l6 2l1 2zM1221 330l-3 4l-3 1l-4 -1l-7 0l-3 1l-1 3l4 4l2 -2l7 -2l0 2l-2 0l-1 2l-4 2l4 5l-1 1l4 5l0 2l-2 2l-2 -2l2 -3l-4 1l-1 -1l0 -1l-2 -3l0 -3l-3 1l1 4l0 6l-3 1l-2 -1l2 -4l-1 -4l-2 0l-1 -3l2 -2l0 -4l2 -6l1 -1l4 -3l3 1l5 0l4 0l4 -3l1 1zM1235 331l0 4l-3 0l0 2l2 2l-2 1l-1 -3l-1 -5l0 -3l2 -2l0 2l2 1l1 1zM1143 359l-4 0l-4 -3l-5 -3l-1 -3l-3 -3l-2 -3l-3 -5l-4 -4l-1 -3l-2 -3l-3 -3l-2 -3l-3 -2l-4 -5l-1 -2l3 0l6 1l3 4l4 3l2 1l4 5l4 0l3 2l2 4l3 2l-1 3l2 1l1 0l1 3l2 2l2 1l2 2l-1 5l0 6zM1191 329l5 3l-5 1l-1 3l0 3l-4 3l0 4l-1 6l-1 -1l-5 1l-1 -2l-3 0l-2 -2l-5 2l-1 -2l-3 0l-3 0l-1 -6l-2 -1l-2 -3l0 -4l0 -3l3 -3l3 1l3 0l0 -4l2 -1l5 0l3 -4l2 -2l1 -2l4 -2l3 -3l2 -3l2 0l2 2l0 2l2 1l4 1l-1 2l-2 0l0 2l-2 1l-3 4l3 4l-1 2zM1226 302l0 3l0 2l-1 4l-2 -4l-2 2l2 3l-1 2l-5 -3l-1 -3l1 -1l-3 -2l-1 1l-2 0l-3 2l0 -1l1 -3l3 -1l2 -2l1 2l3 -1l1 -2l3 0l0 -3l3 2l0 2l1 1zM1045 311l-4 1l-2 -3l0 -6l2 -6l2 2l2 3l2 4l0 4l-2 1zM476 296l-3 0l-1 0l1 -1l0 -2l3 -1l0 1l0 3zM1216 295l-2 1l-1 3l-1 1l-2 -3l0 -1l1 -1l1 -3l2 0l-1 3l3 -4l0 4zM1194 299l-5 4l2 -3l3 -3l2 -3l2 -3l1 3l-3 2l-2 3zM1208 288l2 2l2 0l0 1l-1 2l-3 1l0 -2l0 -2l0 -2zM1222 287l1 5l-3 -1l0 1l1 3l-2 0l0 -2l-1 -1l-1 -2l3 0l0 -1l-3 -3l4 0l1 1zM1206 284l-1 3l-2 -2l-2 -3l4 0l1 2zM1205 262l3 1l1 -1l0 1l0 2l1 3l-1 3l-2 1l-1 3l1 4l2 0l2 0l5 2l-1 2l2 1l-1 2l-3 -2l-1 -2l-1 1l-3 -2l-3 0l-2 0l0 -2l1 -1l-1 -1l-1 1l-2 -2l0 -2l0 -3l1 1l1 -6l1 -4l2 0zM458 263l-1 1l-3 0l-3 0l0 -1l1 -1l3 0l2 0l1 1zM412 265l-1 0l-2 0l-2 -2l0 -1l2 0l1 0l2 0l3 1l0 1l-3 1zM430 257l3 0l1 -1l3 0l2 2l1 -1l1 2l2 0l0 1l2 0l2 2l-2 1l-2 -1l-1 0l-2 0l-1 1l-1 0l-1 -1l-1 1l-2 3l-1 -1l0 -1l-2 -1l-2 0l-3 0l-2 1l-2 -1l1 -2l3 1l3 0l2 -1l-2 -1l0 -2l-3 -1l1 -1l3 1zM1161 261l-3 2l-3 -1l0 -3l1 -2l5 -1l2 0l1 1l-2 2l-1 2zM98 260l-1 0l-1 0l0 -1l0 -2l1 -1l-1 -1l1 0l1 1l1 0l1 1l1 1l-2 1l-1 1zM96 253l-2 1l0 -1l-1 0l0 -1l1 0l1 0l1 1zM93 251l0 1l-2 0l0 -1l2 0zM89 251l-2 0l0 -1l1 -1l1 2zM83 248l-1 0l-1 0l0 -1l1 0l1 0l0 1zM401 245l2 1l4 0l1 1l3 2l3 2l1 0l3 1l-1 1l3 0l3 2l0 1l-3 0l-3 1l-2 -1l-6 1l3 -3l-2 -1l-3 0l-1 -1l-1 -2l-2 0l-4 -1l-1 -1l-5 -1l-2 -1l2 -1l-4 0l-3 2l-2 0l0 1l-2 1l-2 -1l2 -1l1 -1l2 -1l2 -1l3 0l1 -1l3 1l4 0l3 1zM410 241l-1 0l-1 -2l-2 -1l1 -3l1 0l2 4l0 2zM1205 245l-2 3l-2 -3l-1 -3l3 -4l3 -3l2 1l-1 2l-2 7zM409 230l-5 0l0 -1l2 0l3 0l0 1zM412 230l-1 2l0 -2l-2 -2l3 2zM1259 199l0 2l-2 2l-2 -1l-2 1l-1 2l-3 -1l0 -2l3 -2l2 0l2 -1l3 0zM858 193l-2 2l0 1l-4 2l-2 -1l-1 -1l2 -1l1 -1l3 1l3 -2zM815 193l2 2l3 -1l3 1l2 0l0 1l-6 0l-5 -1l1 -2zM782 183l-1 3l0 1l-1 3l-3 -2l-2 0l-5 -2l0 -3l5 1l4 -1l3 0zM757 171l2 3l0 5l-2 0l-2 1l-1 -1l0 -5l-1 -2l2 0l2 -1zM1284 187l-2 4l1 2l-2 2l-5 2l-7 1l-6 4l-3 -1l0 -3l-7 0l-4 2l-5 0l4 3l-3 7l-2 2l-2 -2l1 -3l-3 -1l-1 -3l3 -1l3 -3l4 -2l2 -3l8 -1l5 1l4 -7l3 2l5 -4l3 -2l2 -5l0 -4l1 -3l4 -1l3 6l0 3l-4 4l0 4zM758 167l-1 3l-2 0l-1 -3l1 -2l3 -1l0 3zM1296 159l2 1l3 -2l1 5l-6 1l-3 4l-7 -3l-2 5l-4 0l-1 -4l2 -3l5 -1l1 -5l1 -3l5 4l3 1zM465 150l3 0l4 0l-2 2l-1 0l-6 -2l-1 -1l2 -1l1 2zM473 140l-2 0l-5 -2l-4 -1l1 -1l6 1l4 2l0 1zM226 142l-2 1l-7 -2l-1 -2l-3 -1l-1 -1l-4 -1l-2 -2l1 -1l4 1l2 0l4 1l1 1l2 2l4 2l2 2zM495 133l-2 4l2 -2l3 1l-1 2l3 1l2 -1l4 1l-1 3l3 -1l0 2l1 3l-1 3l-2 1l-3 -1l1 -4l-1 0l-5 3l-2 0l3 -2l-4 -1l-4 1l-8 0l-1 -2l3 -1l-2 -1l3 -3l5 -6l2 -2l4 -2l1 1l0 1l-3 2zM189 120l4 0l-1 4l3 3l-1 0l-3 -2l-1 -1l-2 -2l-1 -1l0 -2l2 1zM1295 133l4 7l-6 -1l-3 6l4 4l0 2l-3 -2l-3 3l0 -3l0 -4l0 -4l1 -3l0 -6l-3 -4l1 -5l3 -2l-1 -2l2 0l1 2l1 4l0 4l2 4zM693 127l-7 2l-6 0l3 -4l-2 -5l6 -3l3 -2l3 0l4 3l-2 3l1 2l-3 4zM771 114l-3 3l-4 -2l0 -2l5 -1l2 2zM108 108l-4 1l-2 -1l-1 -2l4 -1l2 -1l3 0l1 2l-3 2zM708 101l-4 5l4 -1l4 0l-1 4l-3 3l4 0l4 6l2 0l3 5l1 1l5 1l-1 3l-2 1l2 2l-4 2l-5 0l-7 1l-2 -1l-2 2l-4 0l-3 1l-2 -1l6 -4l3 -1l-6 0l-1 -2l4 -1l-2 -2l1 -3l6 0l0 -2l-3 -2l-4 -1l-1 -1l1 -2l-1 -1l-2 2l-1 -4l-2 -2l2 -4l3 -4l3 1l5 -1zM58 96l-3 1l-2 -1l-3 -1l4 -1l3 1l1 1zM403 87l-2 2l-1 0l-1 -1l1 -2l2 1l1 0zM392 85l-4 2l-3 0l-1 -1l3 -2l5 0l0 1zM33 81l3 1l2 -1l3 1l4 1l-3 1l-3 -1l-2 -1l-3 1l-1 -1l0 -1zM379 73l1 2l2 0l2 1l5 1l4 1l1 2l3 0l3 1l-4 1l-6 -1l-2 -1l-4 2l-6 2l-1 -3l-6 1l4 -2l0 -3l1 -4l3 0zM662 70l-1 3l5 2l-6 4l-11 2l-4 1l-5 -1l-11 -1l4 -2l-9 -2l7 0l0 -2l-8 0l2 -3l6 -1l7 3l6 -2l5 1l6 -2l7 0zM417 67l-5 1l-1 -2l2 -3l3 0l4 1l0 2l-1 0l-2 1zM0 60l10 3l10 4l0 3l3 1l-1 -3l11 0l7 4l-4 2l-6 0l0 4l-2 1l-4 0l-3 -2l-5 -1l-1 -1l-4 -1l-4 0l-3 -1l1 -1l-5 1l2 1l-2 2l1440 0l-5 2l-5 0l3 2l3 3l1 1l1 2l-1 1l-8 -1l-11 3l-3 0l-6 3l-6 3l-2 1l-5 -2l-11 3l-2 -2l-3 2l-6 0l-1 2l-5 4l0 2l5 1l-1 5l-3 1l-2 3l1 2l-7 2l-1 4l-6 1l-1 4l-6 4l-1 -3l-2 -6l-2 -9l2 -5l3 -2l0 -2l6 -1l8 -5l6 -4l8 -4l3 -5l-5 0l-2 3l-11 5l-3 -5l-10 1l-10 7l3 2l-9 1l-6 1l0 -3l-6 -1l-5 2l-12 0l-13 1l-13 8l-15 9l6 1l2 2l4 1l2 -2l5 0l5 5l1 3l-4 4l0 5l-2 6l-6 6l-1 3l-6 4l-5 5l-3 2l-5 3l-2 0l-3 -2l-5 3l-1 1l-1 0l-2 1l-1 2l0 2l-2 1l-1 1l-1 1l-3 1l-2 1l0 2l1 1l2 2l4 4l1 3l0 4l-2 3l-3 0l-3 2l-4 0l-1 -2l1 -3l-2 -4l3 -1l-2 -3l-2 -1l-1 1l-1 0l-1 -1l-1 0l1 -2l1 -1l1 -3l-1 0l-2 -1l-2 -1l-6 1l-2 2l-5 1l2 -1l0 -2l3 -3l-2 -2l-4 2l-4 2l-3 3l-4 0l-2 2l2 3l4 0l0 2l3 1l4 -2l4 1l2 0l1 2l-6 1l-1 3l-4 2l-2 2l4 3l1 3l3 4l3 3l0 3l-3 1l1 2l2 2l0 3l-1 3l-2 0l-3 5l-4 5l-3 5l-6 3l-5 4l-5 0l-2 2l-2 -1l-2 2l-6 2l-4 0l-1 5l-2 0l-1 -3l0 -2l-5 -1l-2 1l-5 3l-3 4l-1 3l3 4l3 5l4 3l3 3l1 7l0 7l-4 3l-4 3l-3 3l-5 4l-2 -3l1 -3l-3 -2l-3 -1l-2 -2l-2 -4l-3 -2l-4 0l1 -3l-4 0l0 5l-2 6l-1 3l0 3l2 0l2 4l1 3l2 3l2 0l3 2l3 3l2 3l0 2l-1 2l1 1l0 3l1 1l2 3l0 2l-3 0l-4 -3l-4 -3l-1 -2l-2 -3l-1 -3l-1 -2l0 -3l-1 -2l-1 -1l-1 -2l-2 -3l-2 -2l-1 3l0 -2l0 -3l1 -4l0 -3l1 -3l-1 -2l0 -4l-2 -3l-1 -4l-1 -5l-1 -4l-3 2l-5 3l-2 0l-2 -1l1 -5l-1 -4l-3 -4l1 -2l-3 0l-3 -4l-1 -2l0 -2l-1 -2l-1 -2l-4 0l0 1l-1 3l-2 -1l0 1l-1 -1l-2 0l0 1l-3 0l-5 1l0 3l-2 2l-6 3l-4 5l-3 2l-4 3l0 2l-2 1l-4 1l-2 0l-1 3l1 6l0 3l-2 4l0 7l-2 0l-1 3l1 1l-4 1l-1 3l-2 1l-4 -4l-1 -5l-2 -4l-1 -2l-3 -4l-1 -5l0 -2l-4 -6l-2 -8l-1 -5l0 -5l0 -3l-6 2l-3 -1l-5 -4l2 -2l-2 -1l-4 -4l-3 -1l-1 -3l-4 -3l-7 1l-6 0l-6 1l-8 -2l-4 0l-4 -1l-2 -5l-2 -1l-3 1l-4 2l-5 -1l-4 -3l-4 -1l-3 -4l-3 -6l-2 1l-2 -1l-2 1l-2 0l1 2l-1 1l2 3l1 3l2 1l1 2l3 1l0 2l-1 1l1 2l1 1l1 1l0 1l0 -3l1 -2l1 0l1 1l0 2l0 2l0 2l1 0l0 1l3 -1l4 0l2 1l3 -3l3 -3l2 -2l1 -2l1 1l0 1l-1 1l1 3l1 3l3 1l3 1l2 1l2 2l1 1l1 1l0 1l-1 2l-1 1l-2 2l-1 2l-2 0l-1 1l0 2l0 3l-2 0l-3 2l0 2l-1 0l-2 0l-2 1l0 2l-2 1l-2 0l-3 1l-2 0l-2 1l-1 2l0 2l-4 1l-7 2l-3 3l-2 0l-1 0l-3 2l-2 0l-3 1l-1 0l-1 1l-1 0l-1 1l-2 0l-1 1l-3 -1l-1 -2l0 -2l-1 -1l0 -3l-2 -2l1 0l0 -2l0 -1l0 -1l0 -2l-2 -1l0 -2l-2 -1l-2 -4l-1 -3l-3 -3l-2 0l-2 -4l-1 -3l0 -2l-2 -5l-2 -1l-2 -1l-1 -2l0 -1l-1 -2l-1 -1l-2 -3l-2 -4l-2 -2l-2 0l0 -2l0 -2l1 -1l0 -1l-1 2l-1 3l-1 2l-1 0l-2 -1l-1 -2l-3 -5l-1 0l2 4l2 4l3 6l2 3l1 2l4 4l-1 1l0 3l5 3l0 1l2 4l-1 1l0 4l2 5l1 1l3 1l2 5l1 3l2 2l6 4l2 2l2 3l1 1l2 1l1 1l0 2l-2 1l2 1l1 1l1 2l1 1l2 0l4 -1l5 0l3 -2l2 0l2 -1l2 0l1 0l2 0l2 -1l2 -1l1 0l1 1l-1 2l0 2l-1 2l-1 4l-2 5l-2 5l-4 6l-3 4l-5 6l-4 3l-6 4l-3 3l-5 5l-1 2l-1 1l-2 1l-1 2l-2 0l-1 3l-1 2l-1 2l-1 2l-2 5l0 2l3 1l0 1l-1 3l0 1l0 2l1 2l2 4l1 1l1 2l0 4l0 4l0 6l1 2l-1 3l-2 2l-2 3l-4 1l-4 2l-5 5l-1 0l-3 3l-2 1l0 3l2 3l0 2l1 2l0 -1l0 4l-1 2l1 1l0 1l-2 2l-3 1l-5 2l-2 2l1 2l1 0l-1 2l-1 3l0 3l-1 2l-3 2l-1 1l-1 2l-2 2l-2 3l-4 4l-3 2l-3 2l-4 1l-2 1l-1 1l-2 -1l-2 1l-5 -1l-2 1l-2 -1l-4 2l-3 1l-3 1l-2 0l-1 -1l-2 0l-1 -2l0 1l-1 -2l0 -2l-1 -3l1 0l0 -3l-3 -4l-2 -3l-3 -6l-3 -3l-1 -3l-1 -4l-1 -2l-1 -7l0 -4l-1 -3l-2 -1l-2 -4l-2 -4l-1 -3l-3 -4l0 -3l0 -2l0 -4l1 -3l1 -2l1 -4l1 -1l2 -3l2 -2l0 -3l0 -2l-1 -2l-2 -2l0 -2l0 -1l1 -2l-1 -4l-1 -2l-2 -3l0 -1l0 -1l-1 -3l-4 -4l-4 -4l-2 -3l-3 -5l0 -1l1 -1l1 -3l1 -3l-1 -1l2 -4l0 -3l-1 -3l-2 -1l-1 -1l-1 -1l0 -1l-4 1l-2 0l-1 1l-3 0l-3 -3l-1 -2l-3 -3l-3 0l-3 0l-4 0l-3 1l-6 3l-2 1l-4 1l-3 -1l-2 0l-3 -1l-3 0l-4 1l-3 1l-4 2l-1 0l-1 0l-4 -2l-4 -3l-3 -3l-3 -2l-1 0l-3 -2l-2 -2l0 -2l-1 -3l-2 -2l-1 -2l-1 0l-1 -1l-1 -2l0 -1l-2 0l-2 -2l-1 0l-1 -1l0 -1l-1 -1l-1 -1l0 -3l0 -1l-2 -3l-1 -2l1 -1l2 -2l1 -3l0 -2l1 -2l0 -3l0 -4l-1 -2l1 -2l-1 -2l-2 -2l0 -2l0 -2l2 -1l1 -2l0 -1l1 -3l2 -2l2 -1l1 -2l0 -3l1 -2l3 -1l2 -5l3 -1l3 -1l3 -2l2 -1l4 -4l-1 -5l1 -3l1 -2l2 -3l4 -2l3 -1l3 -5l1 -2l3 0l3 2l3 -1l5 1l1 0l4 -2l4 -1l3 -1l4 -1l7 -1l6 0l2 0l4 -1l4 0l2 0l3 0l4 -1l3 0l0 2l3 -1l-2 2l0 2l2 1l-1 4l-2 2l0 2l2 0l1 2l2 0l5 2l1 -1l4 1l5 2l2 3l3 1l6 2l4 2l2 -1l2 -2l-1 -3l2 -2l2 -2l3 0l6 0l1 2l1 0l2 1l4 0l1 2l5 0l4 1l4 1l2 1l3 -2l1 -1l4 0l3 0l1 2l1 -1l3 1l3 0l2 -1l1 -1l1 -2l1 -3l0 -1l1 0l1 -4l2 -2l0 -1l0 -3l1 -1l-2 -2l2 -2l-3 1l-3 -1l-3 2l-6 1l-3 -3l-5 0l0 2l-3 0l-4 -2l-4 0l-3 -4l-3 -2l2 -3l-2 -2l4 -4l6 0l2 -3l8 1l4 -3l5 -1l7 0l7 3l5 1l5 0l3 0l5 -2l1 -2l-1 -3l-2 -1l-3 -1l-1 -1l-5 -3l-5 -2l-3 -2l3 -1l3 -3l-2 -2l6 -1l-1 -1l-3 1l-3 0l-3 1l-4 0l-3 2l0 2l2 1l4 0l-1 2l-4 0l-5 3l-3 -1l1 -2l-4 -1l1 -1l3 -1l-1 -1l-6 -1l0 -2l-4 1l-1 2l-4 3l1 1l-2 1l-2 -1l-1 5l-2 2l-1 3l1 2l0 2l4 1l-1 1l-5 0l-1 1l-4 2l-1 -1l0 -1l-2 0l-2 -1l-5 1l3 3l-2 0l-3 0l-2 -2l0 1l0 2l2 2l-1 1l2 2l2 1l0 2l-4 -1l2 2l-3 1l2 3l-3 0l-3 -1l-2 -4l-1 -2l-1 -2l-2 -2l0 -2l-1 0l0 -1l-2 -1l-1 -2l1 -3l0 -1l-1 -1l-1 -1l-2 -1l-4 -1l-2 -2l-4 -1l-3 -3l1 0l-2 -2l0 -1l-3 -1l-1 2l-1 -2l0 -1l1 0l-3 -1l-4 1l1 2l-1 2l1 2l4 2l2 3l5 3l3 0l1 1l-1 1l3 1l3 1l4 3l-1 2l-2 -2l-4 -1l-1 3l3 1l-1 2l-1 1l-3 3l-1 0l0 -1l1 -2l0 -1l-1 -2l-1 -2l-2 -1l-1 -1l-3 -1l-1 -2l-3 0l-4 -2l-3 -2l-3 -3l-1 -4l-2 0l-3 -1l-2 0l-3 2l-1 0l-4 2l-8 -1l-6 2l0 2l0 2l-4 3l-5 1l0 1l-3 3l-1 3l1 2l-2 2l-1 2l-3 1l-3 3l-5 0l-3 0l-3 2l-2 1l-1 0l-2 -1l-1 -3l-4 0l-1 1l-3 -1l-2 1l1 -4l0 -2l-2 0l-1 -2l0 -3l2 -1l0 -2l1 -2l0 -2l-1 -1l0 -2l0 -2l-2 -2l6 -3l5 1l5 0l5 0l3 0l6 0l2 -2l1 -8l-4 -4l-3 -2l-6 -2l0 -3l5 -1l7 1l-2 -4l4 2l9 -4l2 -3l3 -1l3 0l2 -1l4 -6l5 -2l4 0l0 -1l4 0l0 1l3 -2l-1 -2l0 -2l-2 -2l0 -4l1 -1l1 -1l4 -1l1 -1l3 -1l0 2l-1 1l0 2l3 0l-1 2l-2 -1l-2 3l1 2l0 2l4 1l0 1l4 -1l2 -1l5 2l1 1l3 -1l6 -2l5 -1l4 0l1 1l4 0l1 -1l5 -2l-1 -3l0 -3l2 -3l4 -1l3 3l3 0l1 -3l1 -3l-2 1l-2 -1l-1 -3l5 -1l5 0l5 0l4 0l4 -2l-4 -2l-7 0l-7 2l-7 1l-2 -3l-4 -1l1 -4l-2 -3l2 -3l4 -2l9 -5l3 0l-1 -2l-5 -2l-7 1l-4 3l0 2l-6 4l-8 3l-3 6l3 2l4 3l-4 4l-4 1l-1 7l-2 4l-5 -1l-3 3l-4 1l-2 -4l-3 -5l-3 -5l-3 -3l-7 5l-6 1l-5 -2l-2 -5l-1 -9l4 -2l10 -4l8 -4l7 -6l10 -7l7 -3l11 -5l9 -2l6 0l6 -3l7 0l8 -1l12 3l-5 1l4 3l5 -2l6 3l11 1l15 4l3 2l1 3l-5 2l-6 1l-18 -3l-3 0l6 3l1 6l5 2l3 1l1 -2l-3 -2l3 -2l9 3l4 -1l-3 -3l9 -4l4 0l4 2l2 -3l-3 -2l2 -3l-3 -2l11 1l2 2l-5 1l0 2l3 1l7 -1l1 -2l8 -2l14 -3l3 0l-4 2l5 1l3 -2l7 0l6 -2l5 3l4 -3l-4 -2l2 -1l12 1l6 1l14 5l3 -2l-4 -3l-5 -1l1 -2l-2 -3l0 -1l7 -4l3 -3l3 -1l10 1l1 2l-4 3l3 2l1 2l-1 6l5 2l-2 3l-8 6l5 0l1 -1l5 -1l1 -2l3 -2l-2 -2l2 -3l-5 0l-1 -3l4 -4l-6 -3l8 -2l-1 -3l2 0l2 2l-2 4l4 0l-1 -2l6 -2l9 0l7 2l-4 -3l0 -5l7 0l10 0l8 -1l-3 -2l5 -2l4 -1l8 -2l11 0l1 -1l10 -1l4 1l9 -2l7 0l1 -1l4 -2l9 -2l7 2l-5 0l9 1l1 2l4 -1l11 0l9 2l4 2l-1 2l-5 1l-10 2l-3 1l5 1l5 1l4 -1l2 3l2 -1l6 -1l13 1l1 2l17 0l0 -3l9 1l6 0l6 2l2 2l-2 2l5 3l6 2l4 -4l6 1l7 -1l8 2l3 -2l6 1l-2 -4l5 -1l36 2l3 3l11 3l16 -1l8 1l3 1l0 3l5 1l5 -1l7 0l8 1l7 0l7 3l5 -1l-3 -3l2 -1l13 1l8 -1l11 2l-1434 2zM916 171l2 3l2 0l2 1l-4 0l0 3l-1 2l-2 1l1 2l1 3l4 1l2 2l6 0l6 -1l1 -1l-1 -3l1 -4l-4 -1l1 -3l-2 0l1 -4l3 1l4 -1l-3 -2l-1 -2l-3 1l-1 2l-1 -2l0 -1l1 -2l-1 -1l-5 -2l-1 -3l-3 -1l0 -1l4 0l0 -3l4 -1l3 1l1 -4l-1 -2l-4 0l-3 -1l-5 2l-4 0l-1 3l-4 0l-4 5l3 3l0 3l4 5l2 2zM337 60l-2 1l-5 -1l-4 0l-5 -2l3 -1l3 -2l4 2l3 0l1 1l2 2zM0 50l1440 3l-4 0l-1 -1l-1435 -2zM0 50l1 0l3 0l6 1l-1 0l-4 1l-5 1l0 -3zM358 58l0 4l5 -3l5 3l-1 3l4 2l4 -3l3 -3l0 -5l6 1l6 0l5 2l0 2l-3 2l3 3l-1 2l-7 2l-6 1l-4 -1l-1 2l-4 3l-1 2l-5 3l-6 0l-3 2l0 2l-5 1l-5 3l-4 4l-2 4l0 4l6 1l2 4l2 3l5 -1l8 2l4 1l3 2l5 1l4 2l7 0l4 0l-1 4l1 4l3 4l6 4l3 -1l3 -4l-2 -7l-3 -2l6 -2l5 -2l2 -3l0 -3l-3 -3l-5 -3l5 -4l-2 -4l-1 -6l2 -1l7 1l4 0l4 -1l3 2l5 2l2 1l7 1l0 3l1 5l4 1l2 2l6 -2l4 -4l3 -2l3 3l5 5l4 5l-1 3l5 2l4 2l6 1l3 1l1 4l3 0l2 2l0 4l-3 2l-3 1l-6 2l-5 3l-7 1l-8 -1l-6 0l-5 0l-3 3l-5 2l-6 5l-4 4l3 -1l6 -5l9 -4l6 0l3 2l-3 3l1 4l1 3l5 2l7 -1l4 -4l0 3l3 1l-5 3l-9 2l-4 2l-4 3l-3 0l-1 -4l7 -3l-6 0l-5 0l1 2l-4 2l-4 1l-4 1l-3 3l0 1l0 2l1 2l2 0l-1 -2l1 1l0 1l-3 1l-1 0l-3 1l-2 0l-3 0l-3 1l6 0l1 0l-5 1l-3 0l-1 1l1 0l-1 3l-3 3l0 -1l-1 0l-1 -1l1 2l1 1l0 1l-2 2l-2 3l1 -3l-2 -1l0 -4l-1 2l1 3l-3 -1l3 1l0 4l1 0l1 2l0 4l-2 3l-5 1l-2 2l-2 1l-2 1l-1 1l-4 3l-2 2l-2 2l-1 3l1 3l1 3l2 3l0 2l2 4l0 3l-1 2l-1 2l-1 1l-2 -1l0 -2l-2 0l-2 -4l-2 -3l0 -2l0 -2l-1 -2l-3 -4l-1 0l-4 1l-1 0l-2 -2l-3 -1l-4 1l-4 -1l-3 1l-1 0l0 1l0 2l1 1l-1 0l-1 0l-2 1l-3 -1l-3 -2l-3 1l-3 -1l-2 0l-4 1l-3 3l-4 2l-3 2l0 1l-1 3l1 2l0 2l-1 3l-1 3l0 5l0 2l0 2l1 2l1 3l3 3l1 3l1 2l5 1l1 1l4 -1l3 0l3 -1l2 -1l3 -1l1 -2l0 -4l1 -1l3 -1l4 -1l3 0l3 0l1 1l0 2l-3 2l0 2l0 1l0 2l-1 3l-1 -1l-1 0l0 1l1 0l0 1l-1 1l0 1l0 1l0 1l0 2l-1 1l-1 0l-1 1l2 1l1 0l1 0l2 -1l0 1l1 0l1 0l2 0l2 -1l1 0l1 0l1 0l1 0l2 1l1 0l1 0l1 1l1 1l1 1l0 1l0 2l-1 1l0 2l0 1l0 2l0 1l-1 1l0 1l0 1l0 2l0 1l1 2l2 2l2 2l1 1l0 1l2 0l1 1l2 0l2 -1l2 -1l2 -1l2 0l2 0l2 1l1 1l2 1l2 0l3 -2l1 -1l0 -1l1 -3l2 -2l3 0l0 -1l3 0l3 -2l2 -1l2 -2l1 0l1 2l0 1l0 1l-3 0l2 2l-1 2l-1 3l1 3l2 -1l1 -2l-1 -2l-1 -3l5 -2l0 -1l1 -2l2 3l2 0l3 2l0 2l4 0l4 -1l2 2l3 1l3 -2l0 -1l5 0l4 0l-3 1l1 2l4 1l3 1l0 4l2 0l2 1l3 1l2 3l0 2l2 0l2 2l1 1l5 1l1 -1l3 0l4 1l2 0l2 1l5 4l0 1l2 0l1 2l2 7l2 1l0 3l-3 3l1 1l8 1l0 4l3 -3l5 2l6 2l2 3l0 2l4 -1l8 2l6 -1l6 4l5 4l3 1l4 1l1 1l1 5l1 2l-2 7l-2 3l-5 5l-3 5l-3 3l-1 0l-1 3l0 8l-1 6l0 2l-1 2l-1 5l-4 6l-1 4l-3 1l-1 3l-4 0l-7 1l-2 2l-5 1l-5 4l-3 4l-1 2l1 3l-1 4l-1 2l-2 2l-5 7l-3 3l-3 2l-2 4l-2 2l-2 3l-5 2l-3 -1l-2 0l-4 -1l-2 0l-3 -2l0 2l5 3l0 3l2 2l0 2l-4 5l-6 2l-8 1l-4 -1l1 3l-1 3l0 2l-2 1l-4 1l-4 -2l-1 1l0 4l3 1l2 -1l1 2l-4 1l-3 3l0 4l-1 2l-4 0l-3 2l-1 3l4 3l3 1l-1 4l-5 2l-2 4l-4 2l-2 2l2 4l2 2l-1 0l-4 0l-2 1l-3 2l-1 3l-2 0l-4 -1l-5 -3l-5 -2l-1 -2l1 -3l-2 -2l0 -7l1 -4l4 -3l-6 -1l4 -4l2 -7l4 2l2 -8l-3 -2l-1 5l-2 0l1 -6l1 -7l2 -3l-1 -4l0 -4l1 -1l3 -6l3 -6l1 -6l-1 -6l2 -4l-1 -5l2 -4l1 -8l1 -8l2 -9l-1 -7l0 -6l-5 -2l0 -2l-8 -4l-7 -4l-3 -2l-2 -4l1 -1l-3 -5l-4 -7l-4 -8l-2 -2l-1 -3l-3 -3l-3 -1l1 -2l-2 -4l2 -3l3 -2l2 -3l-1 -2l-1 2l-3 -2l1 -1l-1 -4l2 0l0 -3l2 -2l0 -2l2 -1l3 -2l-1 -1l2 0l-1 -2l1 -2l2 0l2 -2l1 -2l-1 -1l1 -3l-1 -3l1 -1l-1 -4l-2 -2l-1 -1l-1 -2l1 -1l-1 -1l0 -1l-2 -1l-2 0l-1 2l-2 1l-1 0l0 1l2 2l-1 0l-1 1l-2 0l0 -2l-1 0l-1 0l-1 -1l-2 -1l-1 0l-1 0l0 1l-1 -1l-2 -1l-1 -1l1 0l-1 -1l-1 -1l-1 -1l-2 0l0 -2l-1 0l0 1l0 1l-1 -1l-2 -1l0 -1l0 -1l0 -1l-1 -1l1 0l-1 -2l-2 -1l-1 -2l-2 -1l-2 -2l1 0l1 0l-1 -1l-1 -1l-1 1l-2 0l-1 0l-2 -1l-2 0l-1 -1l-2 -1l-3 0l-2 -1l-2 -1l-4 -4l-3 -2l-3 -1l-2 0l-3 2l-2 0l-3 -1l-3 0l-4 -2l-3 -1l-4 -2l-4 -2l-1 -1l-2 0l-4 -1l-2 -2l-4 -2l-2 -3l-1 -2l1 0l0 -1l1 -1l0 -2l-1 -1l-1 -2l-1 -2l-4 -4l-4 -3l-2 -3l-3 -1l-1 -1l1 -3l-2 -1l-3 -2l-1 -2l-2 -1l-2 -2l-2 -2l0 -1l-2 -3l-2 -3l0 -2l-2 -1l-2 0l-2 -1l-1 1l1 2l0 3l2 2l3 3l0 1l1 0l0 1l1 0l1 3l1 1l1 1l3 2l1 4l1 2l1 2l0 2l2 0l2 2l1 2l-1 2l-1 0l-1 -3l-3 -2l-3 -2l-2 -1l0 -3l0 -2l-2 -1l-3 -2l-1 -1l-3 -1l-2 -2l2 0l1 -1l0 -2l-3 -3l-2 -1l-2 -3l-1 -2l-2 -4l-2 -3l0 -2l-3 -2l-2 -1l0 -1l-2 0l-2 -1l-3 -1l-1 0l-1 -3l-4 -4l-3 -5l0 -1l-2 -1l-3 -4l0 -3l-3 -2l1 -4l0 -3l-1 -3l1 -4l1 -7l0 -5l-2 -4l-1 -2l1 -1l6 2l2 4l1 -1l-1 -4l-1 -3l-1 0l-8 -4l-3 -2l-7 -1l-2 -4l1 -2l-6 -2l0 -3l-5 -3l0 -2l-2 -2l-4 -1l-1 -3l-5 -4l-2 -3l-4 -1l-7 0l-4 -1l-8 -4l-4 -1l-7 -1l-6 0l-8 -2l-4 -2l-5 1l1 3l-2 0l-5 1l-3 2l-5 0l0 -2l1 -4l5 -1l-1 -1l-6 2l-2 3l-6 3l3 2l-4 2l-4 2l-4 1l-1 2l-6 2l-2 2l-4 2l-3 -1l-4 2l-4 1l-3 1l-7 1l-1 0l5 -2l4 -1l4 -3l5 0l2 -2l5 -2l1 -1l3 -1l1 -3l2 -3l-5 2l-1 -1l-2 1l-3 -2l-1 2l-1 -2l-4 1l-3 0l0 -2l1 -2l-3 -1l-5 1l-4 -2l-2 -1l0 -2l-3 -2l1 -2l3 -3l2 -2l3 0l3 1l3 -2l3 0l3 -1l-1 -2l-2 -1l3 -1l-3 0l-4 1l-1 1l-3 -1l-6 0l-6 -1l-1 -1l-5 -3l5 -1l9 -2l3 0l0 2l8 0l-3 -3l-5 -1l-3 -2l-4 -2l-5 -1l2 -3l7 0l5 -1l1 -2l4 -2l4 -1l8 -2l4 1l6 -2l6 0l3 2l1 -1l7 1l0 1l6 0l4 0l9 1l7 1l3 0l6 -1l6 2l4 0l8 1l6 2l4 0l3 -1l5 -2l6 1l6 -2l7 -1l3 2l3 -1l0 -2l3 0l7 4l5 -3l1 3l5 0l1 -1l5 0l6 1l10 2l5 1l4 -1l5 2l-5 2l7 1l11 0l3 -1l4 2l5 -2l-4 -1l2 -2l5 0l3 0l4 1l4 2l4 0l7 1l6 0l6 0l0 -3l3 0l7 1l-1 4l3 -3l3 0l2 -4l-4 -3l-5 -1l0 -5l5 -3l5 1l4 2l6 4l-4 2l8 1zM263 44l-2 1l9 -1l6 2l4 -2l4 1l3 4l2 -1l-3 -4l4 -1l4 1l4 1l3 4l1 3l7 2l7 2l0 2l-7 0l3 2l-2 1l-7 -1l-7 -1l-4 1l-8 1l-12 1l-5 0l-2 -2l-6 -1l-3 0l-5 -3l2 0l6 -1l6 0l5 0l-7 -1l-9 0l-6 0l-2 -2l10 -1l-7 0l-7 -1l4 -3l3 -2l10 -2l4 1zM302 42l-4 3l-6 -3l2 0l5 -1l3 1zM415 44l0 1l-4 0l-5 -1l-4 1l-1 0l-5 -2l1 -2l2 0l9 0l7 3zM374 43l3 3l4 -3l10 -2l7 4l-1 3l8 -1l4 -2l9 2l5 2l1 2l7 -1l4 2l10 2l3 2l4 3l-7 2l9 3l7 1l5 3l7 1l-2 2l-7 5l-5 -2l-6 -4l-5 1l-1 2l5 3l5 1l2 1l2 4l-1 3l-5 -1l-10 -3l6 3l4 3l0 1l-11 -1l-8 -3l-5 -2l1 -1l-6 -2l-5 -2l0 1l-12 1l-3 -1l2 -3l8 0l8 -1l-1 -1l1 -2l5 -4l-1 -2l-1 -1l-6 -2l-8 -2l2 -1l-4 -2l-4 0l-3 -2l-2 2l-7 0l-15 -1l-8 -1l-7 -1l-3 -1l4 -2l-6 0l-1 -4l3 -4l4 -1l11 -1l-3 2zM319 41l4 0l7 0l2 1l-4 2l6 2l-1 3l-6 2l-4 0l-3 -2l-10 -3l0 -1l8 0l-4 -2l5 -2zM1294 43l-6 0l-8 0l-1 0l4 -2l5 0l6 1l0 1zM347 45l-4 3l-5 0l-2 -4l0 -2l2 -1l4 -2l8 1l8 1l-6 3l-5 1zM238 50l-10 2l-2 -1l-10 -2l2 -2l3 -3l3 -3l-4 -2l14 -1l6 1l10 0l4 1l4 2l-5 1l-10 3l-5 3l0 1zM1323 36l-5 1l-6 0l-8 -2l1 -1l8 1l10 1zM346 36l-3 2l-5 -1l-5 -1l2 -2l6 -1l3 2l2 1zM1300 34l-3 3l-15 0l-6 1l-8 -3l2 -3l5 -1l11 1l14 2zM326 29l3 2l0 2l-2 3l-6 0l-5 0l1 -3l-7 1l0 -3l4 0l6 -2l6 1l0 -1zM287 31l2 2l3 -1l4 0l1 2l-2 2l-14 1l-10 1l-6 0l0 -1l8 -2l-18 1l-6 -1l6 -4l3 -1l12 1l7 3l7 0l-6 -4l4 -1l4 0l1 2zM950 53l-2 0l-13 0l-1 -2l-8 -1l0 -2l4 -1l0 -2l8 -4l-4 0l10 -4l-1 -1l8 -2l14 -3l13 -1l7 -1l8 -1l2 2l-2 1l-14 2l-13 2l-12 4l-6 4l-6 4l0 3l8 3zM341 28l5 1l8 0l3 1l-1 2l5 1l2 1l6 0l5 0l7 -1l8 0l6 0l5 2l1 1l-3 1l-6 1l-5 0l-11 0l-9 0l-6 0l-11 -1l-1 -3l-1 -2l-4 -1l-8 -1l-4 -1l1 -2l8 1zM255 25l0 3l-3 2l-4 0l-8 2l-6 0l-5 0l6 -3l9 -3l6 0l5 -1zM345 26l-2 0l-8 0l-1 -1l8 0l3 0l0 1zM279 25l-7 1l-6 -1l3 -1l6 -1l6 1l-2 1zM819 25l-9 1l-7 -1l3 -1l-3 -1l9 -1l1 2l6 1zM281 22l-5 0l-6 0l4 -1l2 0l5 1zM337 24l-6 1l-3 -1l-2 -2l-1 -1l6 0l2 0l5 1l-1 2zM320 23l1 1l-6 0l-7 -1l-9 -1l4 -1l-5 -1l0 -1l8 0l11 2l3 2zM1140 23l-22 1l7 -5l3 0l3 0l10 2l-1 2zM793 17l13 3l-10 2l-2 3l-4 0l-2 4l-4 0l-9 -3l4 -1l-6 -1l-8 -3l-3 -4l11 -1l2 1l6 0l1 -1l6 0l5 1zM822 14l8 2l-6 2l-12 0l-12 0l0 -1l-6 0l-5 -2l13 -1l6 1l4 -2l10 1zM925 14l-6 0l-3 1l-1 0l-5 1l-4 -1l2 -1l-9 0l8 -1l6 0l1 1l2 -1l4 -1l6 1l-1 1zM1120 20l-9 1l-11 -1l-7 -2l-3 -3l-5 0l10 -3l9 -1l8 2l9 4l-1 3zM372 17l5 2l-6 1l-7 3l-7 0l-9 0l-4 -2l0 -1l3 -2l-7 1l-4 -2l-3 -2l3 -1l3 -2l4 0l-2 -1l9 0l5 2l7 1l7 1l3 2zM446 4l11 0l8 0l8 1l-1 2l-9 1l-10 1l-4 1l9 0l-9 2l-7 2l-7 3l-8 0l-3 1l-12 1l6 0l-3 1l3 2l-3 1l-7 1l-1 2l-6 1l1 1l6 0l0 1l-10 2l-11 -1l-11 1l-6 -1l-8 0l0 -2l7 -1l-2 -3l2 0l11 2l-5 -3l-7 0l3 -2l7 -1l2 -1l-6 -2l-2 -2l11 0l3 1l7 -2l-9 0l-14 0l-7 -1l-4 -2l-4 -1l-1 -2l6 0l4 0l8 -1l6 -2l5 1l4 1l3 -2l6 -1l7 -1l12 0l2 1l12 -1l8 0l9 1zM612 2l25 3l-8 2l-15 0l-22 0l2 1l15 -1l12 2l7 -1l4 1l-5 2l11 -1l19 -2l12 1l2 2l-16 3l-2 1l-13 0l9 0l-5 3l-3 3l0 4l5 3l-6 0l-7 1l8 3l1 3l-5 0l6 4l-9 0l4 2l-1 1l-6 1l-5 0l5 2l0 2l-8 -1l-2 1l5 1l5 2l2 3l-7 1l-3 -1l-5 -3l1 3l-4 2l10 0l6 0l-11 4l-11 3l-12 2l-4 0l-4 1l-6 4l-8 3l-3 0l-5 1l-6 1l-4 3l0 2l-2 3l-6 3l1 3l-1 4l-3 4l-5 0l-6 -3l-8 0l-4 -3l-3 -4l-7 -5l-2 -2l0 -4l-6 -3l2 -3l-3 -2l4 -4l6 -2l2 -2l1 -3l-5 2l-2 0l-4 1l-5 -1l0 -3l2 -2l3 0l8 1l-6 -3l-4 -1l-4 0l-3 -1l4 -3l-2 -2l-3 -3l-5 -4l-5 -1l0 -2l-11 -2l-9 -1l-10 0l-10 1l-5 -2l-7 -2l11 -1l8 -1l-17 -1l-9 -1l0 -2l16 -2l14 -2l2 -1l-11 -1l3 -2l14 -3l6 0l-2 -2l10 -1l12 -1l12 0l5 1l10 -2l10 2l6 0l8 1l-10 -2l1 -2l13 -2l14 0l6 -1l14 -1l32 1z';
+const COMPANIES = [
+  { n:'FormFactor', hq:'Livermore, California, USA', lat:37.68, lon:-121.77, listed:'Nasdaq: FORM', founded:1993, tech:'mems',
+    rev:{ v:785, cur:'US$', usd:785, fy:'FY2025', note:'record; DRAM/HBM the growth driver' },
+    stack:['MEMS spring probe cards (full-wafer DRAM and HBM, foundry and logic)','Probe systems, thermal and cryogenic (Cascade Microtech, HPD lineage)','Silicon photonics test (Keystone Photonics, acquired Dec 2025)'],
+    seg:'DRAM/HBM, flash, foundry & logic, systems', notes:'Number one in probe cards by revenue for over a decade in TechInsights surveys. New Farmers Branch, Texas site ramping late 2026. Net income US$54.4M in FY2025.' },
+  { n:'Technoprobe', hq:'Cernusco Lombardone, Italy', lat:45.69, lon:9.40, listed:'Euronext Milan: TPRO', founded:1996, tech:'vertical',
+    rev:{ v:628, cur:'€', usd:690, fy:'2025', note:'+16%; 2026 guidance €950–1,050M' },
+    stack:['Proprietary MEMS-made vertical probes (TPEG and successors)','Strong in foundry & logic, AI and HPC sockets','DIS Tech (Shanghai) subsidiary; new Dresden site'],
+    seg:'Foundry & logic, AI/HPC, automotive, consumer', notes:'Fastest-growing of the majors. Net profit €98.8M and EBITDA margin 32% in 2025; plans to double capacity over 2026–27. 3,300+ employees, 600+ patents.' },
+  { n:'Micronics Japan (MJC)', hq:'Musashino, Tokyo, Japan', lat:35.72, lon:139.56, listed:'TSE: 6871', founded:1970, tech:'mems',
+    rev:{ v:50.4, cur:'¥', unit:'B', usd:469, fy:'FY2025', note:'FY2026 forecast ¥71.6B (+42%)' },
+    stack:['MEMS “micro-cantilever” full-wafer probe cards for DRAM and HBM','Thin-film multilayer substrates made in-house','Probers, test equipment and FPD probe units'],
+    seg:'Memory (about 80% of probe card sales), FPD', notes:'The memory specialist. Its crescent-layout DRAM cards are an industry standard; HBM demand drove the 2026 forecast up sharply.' },
+  { n:'Japan Electronic Materials (JEM)', hq:'Amagasaki, Hyogo, Japan', lat:34.72, lon:135.42, listed:'TSE: 6855', founded:1960, tech:'mixed',
+    rev:{ v:176, cur:'US$', usd:176, fy:'TTM Sep 2025', note:'~1,150 employees' },
+    stack:['Cantilever and vertical probe cards','Memory (NAND and DRAM) focus, Taiwan production'],
+    seg:'Memory, logic', notes:'Oldest of the group. Fourth or fifth by revenue depending on the year.' },
+  { n:'MPI Corporation', hq:'Hsinchu, Taiwan', lat:24.80, lon:121.01, listed:'TPEx: 6223', founded:1995, tech:'mixed',
+    rev:{ v:0.4, cur:'~US$', unit:'B', usd:400, fy:'2025', note:'record year; probe cards 72% of revenue', est:true },
+    stack:['Vertical, MEMS and cantilever probe cards','Engineering probe stations and thermal systems','Chiplet-ready cards with ASE (announced 2025)'],
+    seg:'AI/HPC/ASIC test interfaces, probe systems', notes:'Record 2025 revenue and profit; expanding probe card production in Taiwan.' },
+  { n:'CHPT', hq:'Taoyuan, Taiwan', lat:24.97, lon:121.22, listed:'TWSE: 6510', founded:2010, tech:'vertical',
+    rev:{ v:0.15, cur:'~US$', unit:'B', usd:150, fy:'2025', note:'estimate', est:true },
+    stack:['Vertical probe cards','Load boards and test interfaces'], seg:'Foundry & logic ecosystem in Taiwan', notes:'Chunghwa Precision Test, spun out of Chunghwa Telecom labs.' },
+  { n:'Feinmetall', hq:'Herrenberg, Germany', lat:48.60, lon:8.87, listed:'Private', founded:1968, tech:'mixed',
+    rev:{ nd:true }, stack:['Cantilever, vertical and MEMS probe cards','Spring contact probes and test sockets'], seg:'Automotive, industrial, RF', notes:'Family-owned; strong in European automotive test.' },
+  { n:'Nidec SV TCL (SV Probe)', hq:'Tempe, Arizona, USA', lat:33.43, lon:-111.94, listed:'Part of Nidec', founded:1995, tech:'mixed',
+    rev:{ nd:true }, stack:['Cantilever, vertical and MEMS cards','Operations in the US, Singapore and Japan'], seg:'Broad', notes:'SV Probe, acquired by Nidec and merged into Nidec SV TCL.' },
+  { n:'Korea Instrument', hq:'Gyeonggi, South Korea', lat:37.26, lon:127.03, listed:'KOSDAQ', founded:1988, tech:'mixed',
+    rev:{ nd:true }, stack:['Memory probe cards for the Korean memory makers'], seg:'Memory', notes:'Local supplier to Samsung and SK hynix.' },
+  { n:'TSE', hq:'Jincheon, South Korea', lat:36.86, lon:127.44, listed:'KOSDAQ: 131290', founded:1995, tech:'mixed',
+    rev:{ nd:true }, stack:['Test sockets and interface boards','Probe cards'], seg:'Memory, mobile', notes:'Better known for sockets; probe cards are a smaller line.' },
+  { n:'WinWay Technology', hq:'Kaohsiung, Taiwan', lat:22.63, lon:120.30, listed:'TWSE: 6515', founded:2006, tech:'vertical',
+    rev:{ nd:true }, stack:['Coaxial and vertical test sockets','Probe cards for HPC'], seg:'HPC, networking', notes:'Sockets first, probe cards growing with AI test.' },
+  { n:'Synergie Cad Probe', hq:'Peynier, France', lat:43.45, lon:5.64, listed:'Private', founded:1990, tech:'mixed',
+    rev:{ nd:true }, stack:['Cantilever and vertical cards','RF and power test'], seg:'Analog, RF, power', notes:'European specialist near the Rousset fabs.' },
+  { n:'STAr Technologies', hq:'Hsinchu, Taiwan', lat:24.72, lon:120.90, listed:'Private', founded:1999, tech:'mixed',
+    rev:{ nd:true }, stack:['Probe cards','Parametric test systems'], seg:'Parametric, WAT', notes:'Taiwan and Silicon Valley presence.' },
+  { n:'Wentworth Laboratories', hq:'Sandy, UK', lat:52.13, lon:-0.29, listed:'Private', founded:1965, tech:'cantilever',
+    rev:{ nd:true }, stack:['Cantilever probe cards','Manual and semi-automatic probe stations'], seg:'Engineering, analog', notes:'One of the oldest probe card names still operating.' },
+  { n:'Celadon Systems', hq:'Minneapolis, USA', lat:44.98, lon:-93.27, listed:'Private', founded:1999, tech:'cantilever',
+    rev:{ nd:true }, stack:['High-temperature and cryogenic probe cards','Multi-DUT parametric'], seg:'Extreme-temperature test', notes:'Niche, engineering-driven.' },
+  { n:'Shenzhen DGT', hq:'Shenzhen, China', lat:22.54, lon:114.06, listed:'Private', founded:2015, tech:'mixed',
+    rev:{ nd:true }, stack:['Cantilever and vertical cards for domestic fabs'], seg:'Mature nodes, China', notes:'Part of the domestic-substitution push.' },
+  { n:'Suzhou Silicon Test', hq:'Suzhou, China', lat:31.30, lon:120.58, listed:'Private', founded:2013, tech:'mixed',
+    rev:{ nd:true }, stack:['Probe cards for Chinese memory and logic makers'], seg:'China domestic', notes:'Growing with export-control-driven localisation.' },
+];
+const TECH_COL = { mems:'#0F7F8B', vertical:'#F0B43C', cantilever:'#8A98A4', mixed:'#22B36A' };
+const TECH_NAME = { mems:'MEMS springs', vertical:'Vertical probes', cantilever:'Cantilever', mixed:'Mixed portfolio' };
+const proj = (lat, lon) => ({ x:(lon + 180)*4, y:(84 - lat)*4 });
+const revText = r => r.nd ? 'not disclosed' : `${r.cur}${r.v}${r.unit || 'M'} (${r.fy}${r.note ? ', ' + r.note : ''})`;
+
+let indBuilt = false;
+function openIndustry(){
+  stopEverything(); state.chip = null; setHeader();
+  if (!indBuilt){ buildIndustry(); indBuilt = true; }
+  show('s-industry');
+}
+function buildIndustry(){
+  // world map
+  const dots = COMPANIES.map((c, i) => {
+    const p = proj(c.lat, c.lon);
+    const r = c.rev.nd ? 7 : 7 + Math.sqrt(c.rev.usd)*0.75;
+    return `<circle class="hqdot" data-i="${i}" cx="${p.x.toFixed(0)}" cy="${p.y.toFixed(0)}" r="${r.toFixed(0)}" fill="${TECH_COL[c.tech]}" fill-opacity="${c.rev.nd ? 0.35 : 0.8}" stroke="#fff" stroke-width="2"><title>${c.n}</title></circle>`;
+  }).join('');
+  $('indMap').innerHTML = `<svg viewBox="0 0 1440 568" role="img" aria-label="World map of probe card company headquarters">
+    <rect width="1440" height="568" fill="#EEF2F5"/><path d="${LAND_PATH}" fill="#CDD5DC"/>${dots}</svg>`;
+  $('indLegend').innerHTML = Object.entries(TECH_NAME).map(([k, v]) => `<span><i style="background:${TECH_COL[k]}"></i>${v}</span>`).join('') + '<span><i style="background:#CDD5DC;border:1.5px solid #8A98A4"></i>dot size = latest-year revenue; faint = not disclosed</span>';
+  document.querySelectorAll('.hqdot').forEach(d => d.addEventListener('click', () => showCompany(+d.dataset.i)));
+  $('indChips').innerHTML = COMPANIES.map((c, i) => `<button class="pill" type="button" data-i="${i}">${c.n}</button>`).join('');
+  document.querySelectorAll('#indChips .pill').forEach(b => b.addEventListener('click', () => showCompany(+b.dataset.i)));
+  showCompany(0);
+
+  // revenue bars
+  const withRev = COMPANIES.filter(c => !c.rev.nd).sort((a, b) => b.rev.usd - a.rev.usd);
+  const maxR = withRev[0].rev.usd, W = 640, rowH = 34;
+  $('indBars').innerHTML = `<svg viewBox="0 0 ${W} ${withRev.length*rowH + 10}" role="img" aria-label="Latest fiscal year revenue in US dollars">
+    ${withRev.map((c, i) => { const w = (c.rev.usd/maxR)*400; const y = i*rowH + 6; return `
+      <text x="0" y="${y+18}" font-size="13" fill="#18242C" font-family="Manrope,system-ui,sans-serif">${c.n.replace(/ \(.*\)/, '')}</text>
+      <rect x="215" y="${y}" width="${w.toFixed(0)}" height="22" rx="4" fill="${TECH_COL[c.tech]}" fill-opacity="${c.rev.est ? 0.45 : 0.9}"/>
+      <text x="${(220 + w).toFixed(0)}" y="${y+16}" font-size="12" fill="#5C6B74" font-family="Manrope,system-ui,sans-serif">${c.rev.est ? '~' : ''}US$${c.rev.usd >= 1000 ? (c.rev.usd/1000).toFixed(1) + 'B' : c.rev.usd + 'M'} · ${c.rev.fy}</text>`; }).join('')}
+  </svg>`;
+
+  // technology matrix
+  const cols = ['MEMS springs','Vertical','Cantilever','Memory / HBM','Foundry & logic','Probe systems','Extreme temp / RF'];
+  const has = (c, col) => {
+    const s = c.stack.join(' ').toLowerCase() + ' ' + c.seg.toLowerCase();
+    return { 'MEMS springs': c.tech === 'mems' || /mems/.test(s), 'Vertical': c.tech === 'vertical' || /vertical/.test(s), 'Cantilever': c.tech === 'cantilever' || /cantilever/.test(s),
+      'Memory / HBM': /memory|dram|hbm|nand/.test(s), 'Foundry & logic': /foundry|logic|hpc|asic|ai/.test(s), 'Probe systems': /prober|probe system|probe station/.test(s), 'Extreme temp / RF': /cryo|temperature|rf/.test(s) }[col];
+  };
+  $('indMatrix').innerHTML = `<table class="matrix"><thead><tr><th>Company</th>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead><tbody>${COMPANIES.map(c => `<tr><td>${c.n}</td>${cols.map(col => `<td>${has(c, col) ? '<i style="background:' + TECH_COL[c.tech] + '"></i>' : ''}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+function showCompany(i){
+  const c = COMPANIES[i];
+  document.querySelectorAll('.hqdot').forEach(d => d.setAttribute('stroke', +d.dataset.i === i ? '#18242C' : '#fff'));
+  document.querySelectorAll('#indChips .pill').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.i === i)));
+  $('coName').textContent = c.n;
+  $('coMeta').textContent = `${c.hq} · ${c.listed} · founded ${c.founded}`;
+  $('coRev').textContent = revText(c.rev);
+  $('coSeg').textContent = c.seg;
+  $('coTech').textContent = TECH_NAME[c.tech];
+  $('coStack').innerHTML = c.stack.map(s => `<li>${s}</li>`).join('');
+  $('coNotes').textContent = c.notes;
+}
+$('btnIndustry').addEventListener('click', openIndustry);
+$('btnIndHome').addEventListener('click', goHome);
+$('btnIndRobotics').addEventListener('click', () => openRobotics());
+
+/* =====================================================================
+   The robotics case: why flexible automation decides the next decade
+   All models on this page are illustrative, not company data.
+   ===================================================================== */
+let robBuilt = false;
+function openRobotics(){
+  stopEverything(); state.chip = null; setHeader();
+  if (!robBuilt){ buildRobotics(); robBuilt = true; }
+  show('s-robotics');
+}
+
+const FLOW = [
+  { s:'Probe release', m:'Springs lifted off the carrier by hand under a microscope', r:'Vision-guided micro-arm lifts each spring with a vacuum tip', tm:[18, 6] },
+  { s:'Sort & inspect', m:'Operator checks tips through an eyepiece, sorts into trays', r:'Automated microscope with anomaly-detection model; rejects flagged', tm:[22, 4] },
+  { s:'Magazine load', m:'Trays and magazines carried and loaded by hand', r:'Cobot and AMR move magazines between stations', tm:[10, 3] },
+  { s:'Placement', m:'Dedicated pick-and-place cell, one fixture per product', r:'Generic cell: recipe generated from the card design file', tm:[40, 12] },
+  { s:'Bonding', m:'Batch reflow, manual load and unload', r:'Force-controlled bonding head, in-line', tm:[12, 6] },
+  { s:'Stack assembly', m:'Technician assembles PCB, interposer, stiffener by hand', r:'Cobot-assisted torque-controlled assembly', tm:[25, 10] },
+  { s:'Metrology', m:'Analyzer run, then manual rework loop', r:'Closed loop: analyzer flags, robot reworks, re-measure', tm:[15, 8] },
+  { s:'Pack & ship', m:'Manual packing and paperwork', r:'Cobot packing, auto-generated traveller', tm:[6, 2] },
+];
+const RUNGS = [
+  { n:'Manual bench', d:'Tweezers, microscopes, skilled hands. Flexible, slow, and impossible below about 60 µm pitch.', m:{ changeover:95, precision:20, throughput:15, adaptability:70, data:5 }, co:'hours', tech:'Skill, patience, eyesight' },
+  { n:'Semi-automatic station', d:'A motorised stage and a camera help the operator. Precision rises, throughput barely does.', m:{ changeover:80, precision:45, throughput:30, adaptability:60, data:20 }, co:'a day', tech:'Motorised stage, camera, operator in the loop' },
+  { n:'Dedicated pick-and-place cell', d:'Fast and precise for the product it was built for. A new design means new fixtures, new code, weeks of requalification. This is where much of the industry sits today.', m:{ changeover:20, precision:85, throughput:80, adaptability:15, data:40 }, co:'weeks', tech:'Custom fixtures, hard-coded motion, per-product qualification' },
+  { n:'Flexible robotic cell', d:'Generic grippers, vision and force control, and a recipe generated from the card design. The same cell builds the next design after a software change.', m:{ changeover:85, precision:88, throughput:78, adaptability:85, data:80 }, co:'hours', tech:'6-axis micro-arms, cobots, vision, force control, behaviour-tree orchestration, digital twin' },
+  { n:'Adaptive AI cell', d:'Learned policies handle variation the recipe never saw: a bent spring, a new magazine type, a tip shape from a design that did not exist last quarter.', m:{ changeover:95, precision:90, throughput:85, adaptability:97, data:95 }, co:'minutes', tech:'Vision-language-action models, anomaly detection, fleet learning, simulation-first bring-up' },
+];
+
+function buildRobotics(){
+  // process flow with toggle
+  const drawFlow = robotic => {
+    $('robFlow').innerHTML = FLOW.map((f, i) => `
+      <div class="flowstep ${robotic ? 'rob' : 'man'}">
+        <div class="flowicon">${robotic ? '<svg viewBox="0 0 40 40"><path d="M8 34h24" stroke="#0F7F8B" stroke-width="4" stroke-linecap="round"/><path d="M20 34V20L30 10" stroke="#0F7F8B" stroke-width="5" stroke-linecap="round" fill="none"/><circle cx="20" cy="20" r="3.5" fill="#F0B43C"/><circle cx="30" cy="10" r="3.5" fill="#F0B43C"/></svg>' : '<svg viewBox="0 0 40 40"><path d="M12 6l8 26M28 6l-8 26" stroke="#8A98A4" stroke-width="4" stroke-linecap="round"/><path d="M14 8l12 0" stroke="#8A98A4" stroke-width="4" stroke-linecap="round"/></svg>'}</div>
+        <div class="flowname">${i+1}. ${f.s}</div>
+        <div class="flowdesc">${robotic ? f.r : f.m}</div>
+        <div class="flowtime">${robotic ? f.tm[1] : f.tm[0]} min per card <span style="color:var(--muted)">(illustrative)</span></div>
+      </div>`).join('');
+    const total = FLOW.reduce((a, f) => a + f.tm[robotic ? 1 : 0], 0);
+    $('robFlowTotal').textContent = `${total} minutes of handling per card in this picture. ${robotic ? 'Most of it now runs unattended, and the same cell takes the next design.' : 'Almost all of it needs a trained pair of hands, and step 4 was built for one product.'}`;
+  };
+  $('robToggle').addEventListener('change', e => drawFlow(e.target.checked));
+  drawFlow(false);
+
+  // changeover simulator
+  const sim = () => {
+    const D = +$('robDesigns').value, vol = +$('robVolume').value;
+    const ded = { co:15, eng:120, first:21 }, flex = { co:1, eng:8, first:2 };
+    const calc = c => { const coDays = Math.min(250, D*c.co); const prod = 250 - coDays; return { coDays, prod, eng:D*c.eng, first:c.first, cards: prod*vol }; };
+    const a = calc(ded), b = calc(flex);
+    $('robDesignsOut').textContent = `${D} new card designs a year`;
+    $('robVolumeOut').textContent = `${vol} cards a day when the cell is running`;
+    const bar = (label, va, vb, unit, max) => `
+      <div class="cmp"><div class="cmp-l">${label}</div>
+        <div class="cmp-bars"><div class="cmp-bar ded" style="width:${(va/max*100).toFixed(1)}%"><span>${va.toLocaleString()} ${unit}</span></div>
+        <div class="cmp-bar flex" style="width:${(vb/max*100).toFixed(1)}%"><span>${vb.toLocaleString()} ${unit}</span></div></div></div>`;
+    $('robCmp').innerHTML =
+      bar('Days lost to changeover', a.coDays, b.coDays, 'days', 250) +
+      bar('Days actually building cards', a.prod, b.prod, 'days', 250) +
+      bar('Cards out the door', a.cards, b.cards, 'cards', Math.max(a.cards, b.cards, 1)) +
+      bar('Engineering hours on retooling', a.eng, b.eng, 'h', Math.max(a.eng, b.eng, 1)) +
+      bar('Days to first card of a new design', a.first, b.first, 'days', 21);
+    // year strip
+    const strip = c => { let x = 0, out = ''; const dayW = 100/250; const per = Math.min(250/D, c.co + 250/D); for (let i = 0; i < D && x < 100; i++){ const co = Math.min(c.co, 250 - x/dayW)*dayW; out += `<i class="co" style="left:${x.toFixed(2)}%;width:${co.toFixed(2)}%"></i>`; x += co; const p = Math.max(0, Math.min((250/D - c.co), 250 - x/dayW))*dayW; if (p > 0){ out += `<i class="pr" style="left:${x.toFixed(2)}%;width:${p.toFixed(2)}%"></i>`; x += p; } } return out; };
+    $('robStripA').innerHTML = strip(ded); $('robStripB').innerHTML = strip(flex);
+    $('robVerdict').textContent = a.prod <= 0 ? `At ${D} designs a year the dedicated cell never finishes retooling. The flexible cell builds ${b.cards.toLocaleString()} cards.`
+      : `The flexible cell ships ${(b.cards/Math.max(1, a.cards)).toFixed(1)}× the cards and gets a new design out ${(a.first/b.first).toFixed(0)}× sooner.`;
+  };
+  $('robDesigns').addEventListener('input', sim); $('robVolume').addEventListener('input', sim); sim();
+
+  // automation ladder + radar
+  const keys = ['changeover','precision','throughput','adaptability','data'], labels = ['Changeover speed','Precision','Throughput','Adaptability','Data captured'];
+  const radar = m => {
+    const cx = 150, cy = 150, R = 110, n = keys.length;
+    const pt = (i, v) => { const a = -Math.PI/2 + i*2*Math.PI/n; return [cx + Math.cos(a)*R*v/100, cy + Math.sin(a)*R*v/100]; };
+    const rings = [25,50,75,100].map(v => `<polygon points="${keys.map((k, i) => pt(i, v).map(x => x.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="#CDD5DC"/>`).join('');
+    const poly = keys.map((k, i) => pt(i, m[k]).map(x => x.toFixed(1)).join(',')).join(' ');
+    const lab = keys.map((k, i) => { const [x, y] = pt(i, 128); return `<text x="${x.toFixed(0)}" y="${y.toFixed(0)}" font-size="11" fill="#5C6B74" text-anchor="middle" font-family="Manrope,system-ui,sans-serif">${labels[i]}</text>`; }).join('');
+    return `<svg viewBox="0 0 300 300" role="img" aria-label="Capability radar">${rings}<polygon points="${poly}" fill="rgba(15,127,139,.25)" stroke="#0F7F8B" stroke-width="2"/>${lab}</svg>`;
+  };
+  const showRung = i => {
+    const r = RUNGS[i];
+    document.querySelectorAll('.rung').forEach((b, j) => b.setAttribute('aria-pressed', String(i === j)));
+    $('rungName').textContent = r.n; $('rungDesc').textContent = r.d; $('rungTech').textContent = r.tech; $('rungCo').textContent = `Changeover to a new design: ${r.co}`;
+    $('rungRadar').innerHTML = radar(r.m);
+  };
+  $('robRungs').innerHTML = RUNGS.map((r, i) => `<button class="rung" type="button" data-i="${i}"><b>${i+1}</b>${r.n}</button>`).join('');
+  document.querySelectorAll('.rung').forEach(b => b.addEventListener('click', () => showRung(+b.dataset.i)));
+  showRung(2);
+
+  // investment race
+  const race = () => {
+    const iA = +$('robInvA').value, iB = +$('robInvB').value;
+    $('robInvAOut').textContent = `${iA}% of revenue a year`; $('robInvBOut').textContent = `${iB}% of revenue a year`;
+    const run = inv => { let cum = 0, rev = 100, npi = 12; const out = [{ y:0, rev, npi }]; for (let y = 1; y <= 6; y++){ cum += inv; npi = 12*(0.35 + 0.65*Math.exp(-cum/12)); const wins = 12/npi; rev = rev*(1 + 0.04 + 0.09*(wins - 1)) - inv*0.35; out.push({ y, rev, npi }); } return out; };
+    const A = run(iA), B = run(iB);
+    const W = 360, H = 200, px = y => 40 + y*(W-60)/6, maxRev = Math.max(...A.map(p => p.rev), ...B.map(p => p.rev), 120);
+    const py = v => H - 30 - (v/maxRev)*(H-50);
+    const line = (s, col) => `<polyline points="${s.map(p => px(p.y).toFixed(1) + ',' + py(p.rev).toFixed(1)).join(' ')}" fill="none" stroke="${col}" stroke-width="3" stroke-linejoin="round"/>`;
+    $('robRace').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Revenue index over six years">
+      <line x1="40" y1="${py(100).toFixed(1)}" x2="${W-20}" y2="${py(100).toFixed(1)}" stroke="#CDD5DC" stroke-dasharray="4 4"/>
+      ${[0,1,2,3,4,5,6].map(y => `<text x="${px(y).toFixed(0)}" y="${H-8}" font-size="11" fill="#5C6B74" text-anchor="middle" font-family="Manrope,system-ui,sans-serif">yr ${y}</text>`).join('')}
+      ${line(A, '#0F7F8B')}${line(B, '#F0B43C')}
+      <text x="42" y="${(py(100)-6).toFixed(0)}" font-size="11" fill="#5C6B74" font-family="Manrope,system-ui,sans-serif">today = 100</text>
+    </svg>`;
+    const a6 = A[6], b6 = B[6];
+    $('robRaceOut').textContent = `After six years: company A at ${a6.rev.toFixed(0)} with a ${a6.npi.toFixed(1)}-week new-product cycle, company B at ${b6.rev.toFixed(0)} with ${b6.npi.toFixed(1)} weeks. ${a6.rev > b6.rev ? 'A' : 'B'} wins the next generation of sockets, and the gap keeps widening because every design win feeds more data into the cells.`;
+  };
+  $('robInvA').addEventListener('input', race); $('robInvB').addEventListener('input', race); race();
+}
+$('btnRobotics').addEventListener('click', openRobotics);
+$('btnRobHome').addEventListener('click', goHome);
+$('btnRobIndustry').addEventListener('click', openIndustry);
 
 /* =====================================================================
    Workshop: edit the CHIPS and CARDS tables from inside the game
