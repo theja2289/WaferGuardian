@@ -2,7 +2,7 @@
 
 A small browser game about wafer test and probe cards. Match the probe card to the chip, load the wafer, run the prober and catch the bad dies. Then build a MEMS probe card yourself: design the spring, grow it with lithography, let the robots assemble it, and measure every tip.
 
-Play it: https://theja2289.github.io/wafer-guardian/
+Play it: https://theja2289.github.io/WaferGuardian/
 
 ## Run locally
 
