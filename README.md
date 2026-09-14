@@ -10,7 +10,10 @@ Open `index.html` in a browser. No build step, no dependencies.
 
 ## Add a chip or a probe card
 
-Edit the `CHIPS` and `CARDS` tables at the top of the script in `index.html`. The match rules (pad pitch, pad layout, current, dies per touchdown, full-wafer contact) and the spec cards all read from those tables.
+Two ways:
+
+- **In the game.** Open Workshop from the home screen. Every chip and probe card is editable there, you can add your own, and the changes are saved in your browser. Export and import the whole set as JSON to share it.
+- **In the file.** Edit the `DEFAULT_CHIPS` and `DEFAULT_CARDS` tables at the top of the script in `index.html` to change what everyone gets. The match rules (pad pitch, pad layout, current, dies per touchdown, full-wafer contact) and the spec cards all read from those tables.
 
 ## Note
 
