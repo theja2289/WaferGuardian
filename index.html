@@ -98,7 +98,33 @@
   .shake{animation:shake .3s}
   @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
   .tip{cursor:pointer}
+  .pane{display:contents}
   .foot{color:var(--muted);font-size:12px;margin-top:24px}
+  @media (min-width:900px){
+    body{background:linear-gradient(160deg,#E9EDF1 0%,#DFE6EB 100%)}
+    .app{max-width:1120px;padding:24px 36px 90px}
+    .top{padding:4px 0 22px}
+    .brand{font-size:21px}
+    h1{font-size:36px}
+    .screen{gap:18px}
+    .split{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);column-gap:40px;align-items:start}
+    .pane{display:grid;gap:16px;align-content:start;min-width:0}
+    .split>.pane:first-child{position:sticky;top:20px}
+    .center{max-width:720px;margin:0 auto;width:100%}
+    canvas#hero{width:100%;max-width:420px;margin:0}
+    canvas#resultWafer{width:42%}
+    .stage svg{max-height:64vh}
+    .btn{width:auto;justify-self:start;padding:13px 26px}
+    .controls .btn,.controls .range,.stackbtns .btn{width:100%;justify-self:stretch}
+    .card{margin-bottom:0}
+    .specs{grid-template-columns:repeat(3,1fr)}
+    .note{right:36px;left:auto;max-width:460px;border-radius:16px 16px 0 0}
+    .nblist{grid-template-columns:1fr 1fr}
+    .hud b{font-size:20px}
+  }
+  @media (min-width:900px) and (prefers-reduced-motion:no-preference){
+    .split>.pane:first-child{transition:none}
+  }
   @media (prefers-reduced-motion:reduce){ .note{transition:none} .glitch{animation:none} .shake{animation:none} }
 </style>
 </head>
@@ -109,31 +135,39 @@
     <div class="meta"><button class="linkbtn" id="btnHome" type="button">Home</button><span id="progress"></span><span id="noteCount"></span></div>
   </header>
 
-  <section id="s-home" class="screen">
+  <section id="s-home" class="screen split">
+    <div class="pane">
     <canvas id="hero" class="wafer" role="img" aria-label="A silicon wafer filling in with green passing dies and a few red failures"></canvas>
     <h1>Every chip in your phone was tested before it was packaged.</h1>
     <p>A probe card touched each die on the wafer, thousands of contacts landing within microns, and caught the bad ones. Two shifts to work: run the prober, and build the card that goes on it.</p>
+    </div>
+    <div class="pane">
     <button class="chapter" id="btnCh1" type="button"><span class="chapter-name">Run the prober</span><span class="chapter-grade" id="ch1Grade"></span><span class="chapter-sub">Four chips, three probe cards. Match them, load the wafer, catch the bad dies.</span></button>
     <button class="chapter" id="btnCh2" type="button"><span class="chapter-name">Build a probe card</span><span class="chapter-grade" id="ch2Grade"></span><span class="chapter-sub">Design the spring, grow it with lithography, let the robots assemble it, measure every tip.</span></button>
     <button class="chapter" id="btnNotes" type="button"><span class="chapter-name">Field notebook</span><span class="chapter-grade"></span><span class="chapter-sub" id="nbCount"></span></button>
+    </div>
   </section>
 
-  <section id="s-notes" class="screen hidden">
+  <section id="s-notes" class="screen center hidden">
     <h2>Field notebook</h2>
     <p class="caption">Tap a note to read it again. The locked ones are still out there in the game.</p>
     <div class="nblist" id="noteList"></div>
     <button id="btnNotesHome" class="btn ghost" type="button">Back home</button>
   </section>
 
-  <section id="s-build" class="screen hidden">
-    <div class="stepbar" id="buildBar"></div>
-    <h2 id="buildTitle"></h2>
-    <div class="stage" id="buildStage"></div>
-    <p class="caption" id="buildCaption"></p>
-    <div class="controls" id="buildControls"></div>
+  <section id="s-build" class="screen split hidden">
+    <div class="pane">
+      <div class="stage" id="buildStage"></div>
+    </div>
+    <div class="pane">
+      <div class="stepbar" id="buildBar"></div>
+      <h2 id="buildTitle"></h2>
+      <p class="caption" id="buildCaption"></p>
+      <div class="controls" id="buildControls"></div>
+    </div>
   </section>
 
-  <section id="s-buildResult" class="screen hidden">
+  <section id="s-buildResult" class="screen center hidden">
     <div class="panel">
       <div class="grade" id="bGrade"></div>
       <h2 id="bTitle"></h2>
@@ -153,7 +187,8 @@
     <button id="btnBuildHome" class="btn ghost" type="button">Back home</button>
   </section>
 
-  <section id="s-brief" class="screen hidden">
+  <section id="s-brief" class="screen split hidden">
+    <div class="pane">
     <div class="panel">
       <h2 id="chipName"></h2>
       <p id="chipTag"></p>
@@ -170,27 +205,37 @@
       <canvas id="padScale" role="img" aria-label="Pads drawn to scale next to a human hair"></canvas>
       <p class="caption" id="padCaption"></p>
     </div>
+    </div>
+    <div class="pane">
     <h3>Choose a probe card</h3>
     <div id="cardList"></div>
     <button id="btnLoad" class="btn" type="button" disabled>Load the wafer</button>
+    </div>
   </section>
 
-  <section id="s-load" class="screen hidden">
-    <h2 id="loadTitle">Loading the wafer</h2>
-    <div class="stage" id="loadStage"></div>
-    <p class="caption" id="loadCaption"></p>
-    <div class="controls" id="loadControls"></div>
-    <button id="btnSkipLoad" class="btn ghost small hidden" type="button">Skip setup, use defaults</button>
+  <section id="s-load" class="screen split hidden">
+    <div class="pane">
+      <div class="stage" id="loadStage"></div>
+    </div>
+    <div class="pane">
+      <h2 id="loadTitle">Loading the wafer</h2>
+      <p class="caption" id="loadCaption"></p>
+      <div class="controls" id="loadControls"></div>
+      <button id="btnSkipLoad" class="btn ghost small hidden" type="button">Skip setup, use defaults</button>
+    </div>
   </section>
 
-  <section id="s-run" class="screen hidden">
+  <section id="s-run" class="screen split hidden">
+    <div class="pane">
+    <canvas id="wafer" class="wafer" role="img" aria-label="Wafer map. The prober steps across the wafer automatically."></canvas>
+    </div>
+    <div class="pane">
     <div class="hud">
       <div><b id="hudTime">30.0</b><span>seconds left</span></div>
       <div><b id="hudTested">0/0</b><span>dies tested</span></div>
       <div><b id="hudBad">0</b><span>bad found</span></div>
       <div><b id="hudSpent">$0</b><span>spent</span></div>
     </div>
-    <canvas id="wafer" class="wafer" role="img" aria-label="Wafer map. The prober steps across the wafer automatically."></canvas>
     <p class="status" id="runStatus"></p>
     <div class="event hidden" id="eventBox">
       <p id="eventText"></p>
@@ -204,9 +249,10 @@
       <span><i style="background:var(--damaged)"></i>damaged</span>
     </div>
     <button id="btnShip" class="btn ghost" type="button">Stop and ship the wafer now</button>
+    </div>
   </section>
 
-  <section id="s-result" class="screen hidden">
+  <section id="s-result" class="screen center hidden">
     <div class="panel">
       <div class="grade" id="grade"></div>
       <h2 id="resultTitle"></h2>
@@ -225,7 +271,7 @@
     <button id="btnRetry" class="btn ghost" type="button">Try this chip again</button>
   </section>
 
-  <section id="s-final" class="screen hidden">
+  <section id="s-final" class="screen center hidden">
     <div class="panel">
       <h2>Shift over.</h2>
       <p id="finalSummary"></p>
@@ -450,7 +496,8 @@ function buildDies(chip){
 
 function sizeCanvas(cv, h){
   const dpr = window.devicePixelRatio || 1;
-  const w = Math.min(cv.clientWidth || 300, (cv.parentElement && cv.parentElement.clientWidth) || 440, 600), hh = h || w;
+  const cap = window.innerWidth >= 900 ? 560 : 440;
+  const w = Math.min(cv.clientWidth || 300, (cv.parentElement && cv.parentElement.clientWidth) || cap, cap), hh = h || w;
   if (cv.width !== Math.round(w*dpr) || cv.height !== Math.round(hh*dpr)){ cv.width = Math.round(w*dpr); cv.height = Math.round(hh*dpr); }
   const ctx = cv.getContext('2d');
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
