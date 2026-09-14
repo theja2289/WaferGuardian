@@ -63,7 +63,7 @@
   .stage{background:#F2F5F7;border-radius:12px;overflow:hidden}
   .stage svg{width:100%;height:auto;display:block}
   .caption{color:var(--muted);font-size:13px}
-  .range{width:100%;accent-color:var(--accent);margin:4px 0}
+  .range{width:100%;accent-color:var(--accent);margin:4px 0;touch-action:none;height:34px}
   .controls{display:grid;gap:10px}
   .event{background:var(--panel);border:2px solid var(--fail);border-radius:12px;padding:10px 12px;display:grid;gap:8px}
   .event p{font-size:14px}
@@ -112,6 +112,14 @@
   .wsmulti input{width:18px;height:18px;accent-color:var(--accent)}
   .wsjson{width:100%;min-height:190px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.4;border:1.5px solid var(--line);border-radius:10px;padding:10px;background:#F8FAFB;color:var(--ink);resize:vertical}
   .pane{display:contents}
+  @media (max-width:899px){
+    #s-load h2{order:1} #s-load .stage{order:2} #s-load .caption{order:3} #s-load .controls{order:4} #s-load #btnSkipLoad{order:5}
+    #s-build .stepbar{order:1} #s-build h2{order:2} #s-build .stage{order:3} #s-build .caption{order:4} #s-build .controls{order:5}
+    #s-run .hud{order:1} #s-run canvas{order:2} #s-run .status{order:3} #s-run .event{order:4} #s-run .legend{order:5} #s-run #btnShip{order:6}
+    #s-home canvas{order:1} #s-home h1{order:2} #s-home p{order:3} #s-home .chapter{order:4}
+    #s-brief .panel{order:1} #s-brief h3{order:2} #s-brief #cardList{order:3} #s-brief #btnLoad{order:4}
+    .stage svg{max-height:42vh}
+  }
   .foot{color:var(--muted);font-size:12px;margin-top:24px}
   @media (min-width:900px){
     body{background:linear-gradient(160deg,#E9EDF1 0%,#DFE6EB 100%)}
@@ -693,7 +701,8 @@ function openBrief(){
    ===================================================================== */
 const stage = html => { $('loadStage').innerHTML = html; };
 const caption = t => { $('loadCaption').textContent = t; };
-const controls = html => { $('loadControls').innerHTML = html; };
+const nudge = el => { if (!el || !el.innerHTML.trim() || window.innerWidth >= 900) return; requestAnimationFrame(() => el.scrollIntoView({ block:'nearest', behavior: reduced ? 'auto' : 'smooth' })); };
+const controls = html => { $('loadControls').innerHTML = html; nudge($('loadControls')); };
 let oscOn = false;
 
 function foupSVG(){
@@ -1267,7 +1276,7 @@ const B = {};
 const BUILD_STEPS = ['design','litho','attach','stack','measure','ship'];
 const bstage = html => { $('buildStage').innerHTML = html; };
 const bcaption = t => { $('buildCaption').textContent = t; };
-const bcontrols = html => { $('buildControls').innerHTML = html; };
+const bcontrols = html => { $('buildControls').innerHTML = html; nudge($('buildControls')); };
 function buildBar(i){ $('buildBar').innerHTML = BUILD_STEPS.map((s, j) => `<i class="${j < i ? 'done' : j === i ? 'now' : ''}"></i>`).join(''); }
 
 function startBuild(){
