@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Wafer Guardian</title>
+<meta property="og:title" content="Wafer Guardian">
+<meta property="og:description" content="Match the probe card to the chip, run the prober, and don't let a bad die ship.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:light;
+    --bg:#E6EAEE; --panel:#FFFFFF; --ink:#18242C; --muted:#5C6B74; --line:#CCD5DC;
+    --accent:#0F7F8B; --focus:#F0B43C;
+    --pass:#22B36A; --fail:#E6583C; --partial:#F0B43C; --damaged:#6E1E1E;
+    --paper:#FFF6DC; --paper-line:#E3C25E; --gold:#C9A24C; --steel:#8A98A4;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
+  .app{max-width:440px;margin:0 auto;padding:14px 16px 120px;min-height:100dvh;background:var(--bg);color:var(--ink);overflow-x:hidden}
+  .screen>*,.panel>*,.card>*{min-width:0;max-width:100%}
+  canvas{max-width:100%}
+  .top{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0 14px}
+  .brand{font-weight:800;font-size:18px;letter-spacing:-.01em}
+  .meta{color:var(--muted);font-size:14px;display:flex;gap:12px}
+  .screen{display:grid;gap:14px}
+  .hidden{display:none !important}
+  h1{font-size:27px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:0}
+  h2{font-size:22px;line-height:1.2;font-weight:800;letter-spacing:-.01em;margin:0}
+  h3{font-size:16px;font-weight:700;margin:6px 0 0}
+  p{margin:0}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:10px}
+  .specs{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin:0}
+  .specs div{display:grid}
+  .specs dt{color:var(--muted);font-size:13px}
+  .specs dd{margin:0;font-weight:700}
+  .btn{appearance:none;border:0;border-radius:12px;background:var(--accent);color:#fff;font:inherit;font-weight:700;font-size:16px;padding:14px 18px;cursor:pointer;width:100%}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+  .btn.small{padding:10px 14px;font-size:14px;width:auto}
+  .btn:focus-visible,.card:focus-visible,.range:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+  .card{appearance:none;text-align:left;width:100%;background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:14px;font:inherit;color:inherit;cursor:pointer;display:grid;gap:8px;margin-bottom:10px}
+  .card[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
+  .card-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+  .card-name{font-weight:800}
+  .card-cost{color:var(--muted);font-size:14px;white-space:nowrap}
+  .card-tech{color:var(--muted);font-size:14px}
+  .card-specs{margin:0;padding-left:18px;font-size:14px;display:grid;gap:2px}
+  .xsec{background:#F2F5F7;border-radius:10px;padding:6px}
+  .xsec svg{width:100%;height:auto;display:block}
+  canvas.wafer{width:100%;height:auto;aspect-ratio:1;display:block;border-radius:50%}
+  canvas#hero{width:70%;margin:0 auto}
+  canvas#resultWafer{width:56%;margin:0 auto}
+  .hud{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .hud div{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 4px;text-align:center}
+  .hud b{display:block;font-size:17px}
+  .hud span{font-size:12px;color:var(--muted)}
+  .status{color:var(--muted);font-size:14px;text-align:center;min-height:20px}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:13px;color:var(--muted);justify-content:center}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px}
+  .stage{background:#F2F5F7;border-radius:12px;overflow:hidden}
+  .stage svg{width:100%;height:auto;display:block}
+  .caption{color:var(--muted);font-size:13px}
+  .range{width:100%;accent-color:var(--accent);margin:4px 0}
+  .controls{display:grid;gap:10px}
+  .event{background:var(--panel);border:2px solid var(--fail);border-radius:12px;padding:10px 12px;display:grid;gap:8px}
+  .event p{font-size:14px}
+  .event-bar{height:6px;background:#F6D9D3;border-radius:3px;overflow:hidden}
+  .event-bar i{display:block;height:100%;background:var(--fail);width:100%}
+  .grade{font-size:46px;font-weight:800;line-height:1}
+  .phone{width:96px;margin:0 auto}
+  .phone svg{width:100%;height:auto;display:block}
+  @keyframes flicker{0%,100%{opacity:1}20%{opacity:.15}40%{opacity:.9}60%{opacity:.1}80%{opacity:.7}}
+  .glitch{animation:flicker .7s steps(1) infinite}
+  .note{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:440px;background:var(--paper);border-top:3px solid var(--paper-line);border-radius:16px 16px 0 0;padding:16px 16px 22px;box-shadow:0 -8px 30px rgba(0,0,0,.14);transform:translateY(105%);transition:transform .28s ease;display:grid;gap:10px;z-index:10}
+  .note.open{transform:none}
+  .note-kicker{font-size:13px;color:#8A6D1F}
+  .note-title{font-weight:800;font-size:18px;margin:0}
+  .note-fig svg{width:100%;height:auto;max-height:130px;display:block}
+  .note-body{font-size:15px}
+  .scorecard img{width:100%;border-radius:12px;display:block;border:1px solid var(--line)}
+  .linkbtn{appearance:none;border:0;background:none;color:var(--accent);font:inherit;font-size:14px;font-weight:700;padding:0;cursor:pointer}
+  .chapter{appearance:none;text-align:left;width:100%;background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:14px;font:inherit;color:inherit;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center}
+  .chapter-name{font-weight:800;font-size:17px}
+  .chapter-sub{color:var(--muted);font-size:14px;grid-column:1}
+  .chapter-grade{grid-column:2;grid-row:1/3;font-weight:800;font-size:28px;color:var(--accent)}
+  .stepbar{display:flex;gap:6px}
+  .stepbar i{flex:1;height:6px;border-radius:3px;background:var(--line)}
+  .stepbar i.done{background:var(--accent)}
+  .stepbar i.now{background:var(--focus)}
+  .nblist{display:grid;gap:8px}
+  .nb{appearance:none;text-align:left;width:100%;background:var(--paper);border:1px solid var(--paper-line);border-radius:10px;padding:12px 14px;font:inherit;font-weight:700;color:inherit;cursor:pointer}
+  .nb.locked{background:var(--panel);border-color:var(--line);color:var(--muted);font-weight:500;cursor:default}
+  .stackbtns{display:grid;gap:8px}
+  .stackbtn:disabled{opacity:.35}
+  .shake{animation:shake .3s}
+  @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  .tip{cursor:pointer}
+  .foot{color:var(--muted);font-size:12px;margin-top:24px}
+  @media (prefers-reduced-motion:reduce){ .note{transition:none} .glitch{animation:none} .shake{animation:none} }
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="top">
+    <div class="brand">Wafer Guardian</div>
+    <div class="meta"><button class="linkbtn" id="btnHome" type="button">Home</button><span id="progress"></span><span id="noteCount"></span></div>
+  </header>
+
+  <section id="s-home" class="screen">
+    <canvas id="hero" class="wafer" role="img" aria-label="A silicon wafer filling in with green passing dies and a few red failures"></canvas>
+    <h1>Every chip in your phone was tested before it was packaged.</h1>
+    <p>A probe card touched each die on the wafer, thousands of contacts landing within microns, and caught the bad ones. Two shifts to work: run the prober, and build the card that goes on it.</p>
+    <button class="chapter" id="btnCh1" type="button"><span class="chapter-name">Run the prober</span><span class="chapter-grade" id="ch1Grade"></span><span class="chapter-sub">Four chips, three probe cards. Match them, load the wafer, catch the bad dies.</span></button>
+    <button class="chapter" id="btnCh2" type="button"><span class="chapter-name">Build a probe card</span><span class="chapter-grade" id="ch2Grade"></span><span class="chapter-sub">Design the spring, grow it with lithography, let the robots assemble it, measure every tip.</span></button>
+    <button class="chapter" id="btnNotes" type="button"><span class="chapter-name">Field notebook</span><span class="chapter-grade"></span><span class="chapter-sub" id="nbCount"></span></button>
+  </section>
+
+  <section id="s-notes" class="screen hidden">
+    <h2>Field notebook</h2>
+    <p class="caption">Tap a note to read it again. The locked ones are still out there in the game.</p>
+    <div class="nblist" id="noteList"></div>
+    <button id="btnNotesHome" class="btn ghost" type="button">Back home</button>
+  </section>
+
+  <section id="s-build" class="screen hidden">
+    <div class="stepbar" id="buildBar"></div>
+    <h2 id="buildTitle"></h2>
+    <div class="stage" id="buildStage"></div>
+    <p class="caption" id="buildCaption"></p>
+    <div class="controls" id="buildControls"></div>
+  </section>
+
+  <section id="s-buildResult" class="screen hidden">
+    <div class="panel">
+      <div class="grade" id="bGrade"></div>
+      <h2 id="bTitle"></h2>
+      <p id="bLesson"></p>
+      <dl class="specs">
+        <div><dt>Probe tips</dt><dd id="bProbes"></dd></div>
+        <div><dt>Force per tip</dt><dd id="bForceOut"></dd></div>
+        <div><dt>Total force on the wafer</dt><dd id="bTotalOut"></dd></div>
+        <div><dt>Planarity</dt><dd id="bPlan"></dd></div>
+        <div><dt>Contact resistance</dt><dd id="bRes"></dd></div>
+        <div><dt>Springs passing continuity</dt><dd id="bYield"></dd></div>
+        <div><dt>Placement accuracy</dt><dd id="bPlaceOut"></dd></div>
+      </dl>
+    </div>
+    <button id="btnBuildShare" class="btn" type="button">Share the spec sheet</button>
+    <button id="btnBuildAgain" class="btn ghost" type="button">Build another card</button>
+    <button id="btnBuildHome" class="btn ghost" type="button">Back home</button>
+  </section>
+
+  <section id="s-brief" class="screen hidden">
+    <div class="panel">
+      <h2 id="chipName"></h2>
+      <p id="chipTag"></p>
+      <dl class="specs">
+        <div><dt>Pads on each die</dt><dd id="chipLayout"></dd></div>
+        <div><dt>Distance between pads</dt><dd id="chipPitch"></dd></div>
+        <div><dt>Current during test</dt><dd id="chipCurrent"></dd></div>
+        <div><dt>Test temperature</dt><dd id="chipTemp"></dd></div>
+        <div><dt>Dies on this wafer</dt><dd id="chipDies"></dd></div>
+        <div><dt>Worth per good die</dt><dd id="chipValue"></dd></div>
+        <div><dt>Dies per touchdown</dt><dd id="chipSites"></dd></div>
+        <div><dt>Shift time</dt><dd id="chipTime"></dd></div>
+      </dl>
+      <canvas id="padScale" role="img" aria-label="Pads drawn to scale next to a human hair"></canvas>
+      <p class="caption" id="padCaption"></p>
+    </div>
+    <h3>Choose a probe card</h3>
+    <div id="cardList"></div>
+    <button id="btnLoad" class="btn" type="button" disabled>Load the wafer</button>
+  </section>
+
+  <section id="s-load" class="screen hidden">
+    <h2 id="loadTitle">Loading the wafer</h2>
+    <div class="stage" id="loadStage"></div>
+    <p class="caption" id="loadCaption"></p>
+    <div class="controls" id="loadControls"></div>
+    <button id="btnSkipLoad" class="btn ghost small hidden" type="button">Skip setup, use defaults</button>
+  </section>
+
+  <section id="s-run" class="screen hidden">
+    <div class="hud">
+      <div><b id="hudTime">30.0</b><span>seconds left</span></div>
+      <div><b id="hudTested">0/0</b><span>dies tested</span></div>
+      <div><b id="hudBad">0</b><span>bad found</span></div>
+      <div><b id="hudSpent">$0</b><span>spent</span></div>
+    </div>
+    <canvas id="wafer" class="wafer" role="img" aria-label="Wafer map. The prober steps across the wafer automatically."></canvas>
+    <p class="status" id="runStatus"></p>
+    <div class="event hidden" id="eventBox">
+      <p id="eventText"></p>
+      <div class="event-bar"><i id="eventBar"></i></div>
+      <button id="btnEvent" class="btn" type="button"></button>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--pass)"></i>good</span>
+      <span><i style="background:var(--fail)"></i>bad</span>
+      <span><i style="background:rgba(240,180,60,.35);border:1.5px solid var(--partial)"></i>partly touched</span>
+      <span><i style="background:var(--damaged)"></i>damaged</span>
+    </div>
+    <button id="btnShip" class="btn ghost" type="button">Stop and ship the wafer now</button>
+  </section>
+
+  <section id="s-result" class="screen hidden">
+    <div class="panel">
+      <div class="grade" id="grade"></div>
+      <h2 id="resultTitle"></h2>
+      <p id="lesson"></p>
+      <canvas id="resultWafer" class="wafer" role="img" aria-label="Final wafer map"></canvas>
+      <div class="phone" id="phone"></div>
+      <p class="caption" id="phoneCaption"></p>
+      <dl class="specs">
+        <div><dt>Dies tested</dt><dd id="resTested"></dd></div>
+        <div><dt>Bad chips that shipped</dt><dd id="resEscapes"></dd></div>
+        <div><dt>Good dies lost</dt><dd id="resLost"></dd></div>
+        <div><dt>Profit on this wafer</dt><dd id="resProfit"></dd></div>
+      </dl>
+    </div>
+    <button id="btnNext" class="btn" type="button"></button>
+    <button id="btnRetry" class="btn ghost" type="button">Try this chip again</button>
+  </section>
+
+  <section id="s-final" class="screen hidden">
+    <div class="panel">
+      <h2>Shift over.</h2>
+      <p id="finalSummary"></p>
+      <p id="finalNotes"></p>
+      <div class="scorecard"><img id="cardImg" alt="Your Wafer Guardian score card"></div>
+    </div>
+    <button id="btnShare" class="btn" type="button">Share your score card</button>
+    <button id="btnAgain" class="btn ghost" type="button">Run the prober again</button>
+    <button id="btnFinalHome" class="btn ghost" type="button">Back home</button>
+  </section>
+
+  <footer class="foot">Specs are simplified for play. To add a chip or a probe card, edit the CHIPS and CARDS tables at the top of the script.</footer>
+</main>
+
+<aside class="note" id="note" role="dialog" aria-live="polite" aria-labelledby="noteTitle">
+  <div class="note-kicker" id="noteKicker">Field note</div>
+  <h3 class="note-title" id="noteTitle"></h3>
+  <div class="note-fig" id="noteFig"></div>
+  <p class="note-body" id="noteBody"></p>
+  <button id="btnNote" class="btn" type="button">Got it</button>
+</aside>
+
+<script>
+/* =====================================================================
+   Data model. Edit these tables to add chips or probe cards.
+   layout: 'edge' | 'center' | 'array'    maxSites: dies per touchdown the die size allows
+   fullOK: a full-wafer card can test every die in one touchdown (memory)
+   ===================================================================== */
+const CHIPS = [
+  { id:'mcu', name:'Microcontroller',
+    tagline:'The small chip inside a washing machine, a car door, a game controller.',
+    layout:'edge', layoutLabel:'A ring of pads along the edge',
+    pitch:80, grid:7, failRate:0.08, edgeLoss:0.18, clusters:1,
+    current:1, currentLabel:'Low', temp:25,
+    dieValue:2, escapeCost:20, testMs:350, maxSites:2, fullOK:false,
+    time:30, unit:'microcontrollers' },
+  { id:'soc', name:'Phone processor',
+    tagline:'The chip that runs your phone: CPU, graphics, camera and modem on one die.',
+    layout:'array', layoutLabel:'Thousands of bumps across the whole die',
+    pitch:60, grid:9, failRate:0.10, edgeLoss:0.22, clusters:1,
+    current:3, currentLabel:'High', temp:85,
+    dieValue:80, escapeCost:800, testMs:600, maxSites:2, fullOK:false,
+    time:30, unit:'phone processors' },
+  { id:'dram', name:'DRAM memory',
+    tagline:'Your phone has a few. An AI server has hundreds. The test program is long, so parallel test is everything.',
+    layout:'center', layoutLabel:'One row of pads down the middle',
+    pitch:65, grid:15, failRate:0.06, edgeLoss:0.25, clusters:2,
+    current:1, currentLabel:'Low', temp:85,
+    dieValue:6, escapeCost:100, testMs:1500, fullTestMs:5000, maxSites:2, fullOK:true,
+    time:30, unit:'memory chips' },
+  { id:'gpu', name:'AI accelerator',
+    tagline:'A die nearly the size of the reticle, with tens of billions of transistors. Only a few dozen per wafer, thousands of pins each.',
+    layout:'array', layoutLabel:'Micro-bumps across the whole die',
+    pitch:40, grid:5, failRate:0.18, edgeLoss:0.25, clusters:1,
+    current:3, currentLabel:'High', temp:85,
+    dieValue:2500, escapeCost:25000, testMs:1200, maxSites:1, fullOK:false,
+    time:35, unit:'AI accelerators' },
+];
+
+const CARDS = [
+  { id:'cant', name:'Cantilever needle card',
+    tech:'Tungsten needles set in an epoxy ring. A 1970s design, still everywhere on simple chips.',
+    minPitch:60, layouts:['edge','center'], reach:'edge and center-row pads',
+    sites:2, fullWafer:false, maxCurrent:2, currentLabel:'medium', od:[60,90],
+    waferCost:12, touchdownCost:0.2, touchdownMs:450 },
+  { id:'vert', name:'Vertical probe card',
+    tech:'Thin wires buckle between two guide plates and land straight down, so they reach pads anywhere on the die.',
+    minPitch:50, layouts:['edge','center','array'], reach:'any pad layout',
+    sites:2, fullWafer:false, maxCurrent:3, currentLabel:'high', od:[40,70],
+    waferCost:60, touchdownCost:0.6, touchdownMs:550 },
+  { id:'mems', name:'MEMS spring card',
+    tech:'Tens of thousands of micro-springs built with chip lithography. Fine enough for micro-bumps, and big enough to touch a whole wafer at once.',
+    minPitch:25, layouts:['edge','center','array'], reach:'any pad layout, down to micro-bumps',
+    sites:3, fullWafer:true, maxCurrent:3, currentLabel:'high', od:[25,50],
+    waferCost:150, touchdownCost:1.5, touchdownMs:650 },
+];
+
+/* ---------- Figures (inline SVG) ---------- */
+const WG = `<defs><linearGradient id="wg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4A5A68"/><stop offset="1" stop-color="#26323B"/></linearGradient>
+<pattern id="grid" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M12 0H0V12" fill="none" stroke="rgba(255,255,255,.14)"/></pattern></defs>`;
+const T = (x,y,s,anchor='middle') => `<text x="${x}" y="${y}" font-size="11" fill="#5C6B74" text-anchor="${anchor}" font-family="Manrope,system-ui,sans-serif">${s}</text>`;
+
+const XSEC = {
+  cant: `<svg viewBox="0 0 320 120">${T(160,12,'printed circuit board')}
+    <rect x="20" y="16" width="280" height="10" fill="#2E6B3F"/>
+    <rect x="50" y="26" width="60" height="16" fill="#C8B27A"/><rect x="210" y="26" width="60" height="16" fill="#C8B27A"/>
+    ${T(80,54,'epoxy ring')}${T(240,54,'epoxy ring')}
+    <path d="M80 42 L152 96" stroke="#8A98A4" stroke-width="3" stroke-linecap="round"/>
+    <path d="M240 42 L168 96" stroke="#8A98A4" stroke-width="3" stroke-linecap="round"/>
+    ${T(118,78,'tungsten needle','end')}
+    <rect x="146" y="96" width="10" height="5" fill="#C9A24C"/><rect x="164" y="96" width="10" height="5" fill="#C9A24C"/>
+    <rect x="20" y="101" width="280" height="12" fill="#5A6B78"/>${T(160,118,'die: pads only along the edge')}</svg>`,
+  vert: `<svg viewBox="0 0 320 120">${T(160,12,'printed circuit board')}
+    <rect x="20" y="16" width="280" height="10" fill="#2E6B3F"/>
+    <rect x="70" y="26" width="180" height="10" fill="#9AA9B5"/>${T(275,34,'space transformer','start')}
+    <rect x="80" y="44" width="160" height="6" fill="#C8B27A"/><rect x="80" y="80" width="160" height="6" fill="#C8B27A"/>
+    ${T(70,49,'guide plate','end')}${T(70,85,'guide plate','end')}
+    ${[100,124,148,172,196,220].map(x=>`<path d="M${x} 36 C ${x+6} 55, ${x-6} 70, ${x} 96" fill="none" stroke="#8A98A4" stroke-width="2.5"/>`).join('')}
+    ${T(275,66,'buckling wires','start')}
+    ${[100,124,148,172,196,220].map(x=>`<rect x="${x-4}" y="96" width="8" height="5" fill="#C9A24C"/>`).join('')}
+    <rect x="20" y="101" width="280" height="12" fill="#5A6B78"/>${T(160,118,'die: pads anywhere, wires land straight down')}</svg>`,
+  mems: `<svg viewBox="0 0 320 120">${T(160,12,'printed circuit board')}
+    <rect x="20" y="16" width="280" height="10" fill="#2E6B3F"/>
+    <rect x="60" y="26" width="200" height="12" fill="#9AA9B5"/>${T(275,36,'space transformer','start')}
+    ${[80,100,120,140,160,180,200,220,240].map(x=>`<path d="M${x} 38 l6 8 l-12 8 l12 8 l-12 8 l12 8 l-12 8 l6 8" fill="none" stroke="#8A98A4" stroke-width="2"/>`).join('')}
+    ${T(275,70,'lithographic springs','start')}
+    ${[80,100,120,140,160,180,200,220,240].map(x=>`<rect x="${x-3}" y="96" width="6" height="5" fill="#C9A24C"/>`).join('')}
+    <rect x="20" y="101" width="280" height="12" fill="#5A6B78"/>${T(160,118,'die: micro-bumps, thousands of springs per die')}</svg>`,
+};
+
+const NOTES = {
+  'why-test': { title:'Why test on the wafer at all?', body:'Packaging often costs more than the die inside it, and in chiplet and HBM stacks one bad die wastes the good ones bonded to it. The wafer is the cheapest place to catch a failure.',
+    fig:`<svg viewBox="0 0 320 90">${WG}<circle cx="50" cy="45" r="34" fill="url(#wg)"/><circle cx="50" cy="45" r="34" fill="url(#grid)"/>
+      <path d="M96 45 h40" stroke="#5C6B74" stroke-width="2"/><path d="M132 40 l6 5 l-6 5" fill="none" stroke="#5C6B74" stroke-width="2"/>
+      <rect x="150" y="30" width="44" height="30" rx="4" fill="#5A6B78"/><rect x="160" y="38" width="24" height="14" fill="#C9A24C"/>
+      <path d="M206 45 h40" stroke="#5C6B74" stroke-width="2"/><path d="M242 40 l6 5 l-6 5" fill="none" stroke="#5C6B74" stroke-width="2"/>
+      <rect x="262" y="14" width="36" height="62" rx="6" fill="#18242C"/><rect x="266" y="20" width="28" height="50" rx="2" fill="#22B36A"/>
+      ${T(50,88,'wafer')}${T(172,76,'package')}${T(280,88,'phone')}</svg>` },
+  'foup': { title:'No hand ever touches the wafer', body:'Wafers travel between tools in sealed pods called FOUPs. A robot arm lifts each one out on a vacuum paddle and sets it on the prober chuck, which grips it with vacuum.' },
+  'notch': { title:'The notch is the wafer\'s compass', body:'Every wafer has a small notch cut at the edge. The prober rotates the wafer until the notch lines up so it knows the crystal orientation and which way the dies face.' },
+  'ptpa': { title:'Probe-to-pad alignment', body:'A camera on the chuck looks up at the probe tips and a camera above looks down at the pads. The prober matches the two pictures and drives the chuck to line them up within a couple of microns.' },
+  'temp': { title:'Test at the temperature the chip will live at', body:'The chuck heats or cools the whole wafer. Phone chips are tested hot. Automotive chips are tested at -40 °C and again at 125 °C, because a chip that passes only at room temperature is not a good chip.' },
+  'overdrive': { title:'Overdrive and scrub', body:'Aluminum pads grow a thin oxide skin that does not conduct. The tips press tens of microns past first touch and scrub sideways to break through it. Too little and the die reads open. Too much and the pad craters.' },
+  'full-wafer': { title:'One touchdown, every die', body:'Memory test programs run for a long time, so memory makers use cards that touch every die on the wafer at once. The card has to be flat across the whole wafer, or the edge dies never make contact.' },
+  'single-site': { title:'One die at a time', body:'This die is almost as large as the lithography reticle allows, so there are only a few dozen per wafer and each needs thousands of pins. The card can only test one at a time, and each one is worth a lot.' },
+  'clean': { title:'Tips pick up debris', body:'Every scrub drags a little aluminum onto the tips. After enough touchdowns the contact resistance climbs and good dies start reading as bad. Probers clean the tips on an abrasive pad between wafers.' },
+  'drift': { title:'Heat moves things', body:'At 85 °C the card, the chuck and the wafer all expand by different amounts. The prober re-checks alignment during the run, or the tips slowly walk off the pads and onto their neighbours.' },
+  'yield': { title:'Bad dies come in patterns', body:'Failures cluster. A particle or scratch during lithography kills a group of neighbours, and the wafer edge always yields worse. The wafer map goes back to the fab so engineers can find the cause.' },
+  'escape': { title:'An escape is the expensive failure', body:'A bad die that ships gets packaged, soldered into a board and sometimes reaches a customer before it fails. Every step adds cost, which is why a missed die costs far more than a tested one.' },
+  'package': { title:'From wafer to your pocket', body:'The good dies get sawn apart, packaged, tested again and soldered onto a board. Your phone holds dozens of them, and every one was touched by a probe card first.' },
+  'force': { title:'A few grams, forty thousand times', body:'Each spring pushes with only a few grams of force, but a full-wafer card carries tens of thousands of them. Added up, more than a hundred kilograms presses on the wafer, and the card\'s stiffener and the prober\'s chuck both have to hold that without bending.' },
+  'litho': { title:'Springs made like chips', body:'MEMS probes are not wires. They are built with the same photolithography as the chips they test: resist, mask, UV, developer, electroplated metal, repeated layer by layer, then released from the carrier and given a hard-alloy tip.' },
+  'pickplace': { title:'Robots do the fine work', body:'A placement robot with a camera sets each spring on its pad within a couple of microns, thousands of times per card. Cobots move the trays and substrates between stations. The parts are smaller than a grain of salt; no human hand comes near them.' },
+  'stack': { title:'Five layers, one card', body:'From the wafer up: the springs, a ceramic space transformer that fans the pitch out, an interposer that soaks up tolerance, a big multilayer PCB out to the tester, and a stiffener that keeps it all flat. Each layer is made in a different factory.' },
+  'analyzer': { title:'Measured before it ever sees a wafer', body:'A probe card analyzer measures the height and position of every tip, pushes on each one to check its force and contact resistance, and runs the card hot. A card that fails here is reworked, not shipped.' },
+  'ship': { title:'The fab is waiting', body:'A probe card is built for one chip design. When the fab starts a new product, its wafers can\'t be tested until the card arrives, so the card\'s lead time is on the critical path for every phone launch.' },
+  'card-cant': { title:'Cantilever needle card', body:'', fig:XSEC.cant },
+  'card-vert': { title:'Vertical probe card', body:'', fig:XSEC.vert },
+  'card-mems': { title:'MEMS spring card', body:'', fig:XSEC.mems },
+};
+const NOTE_TOTAL = Object.keys(NOTES).length;
+
+/* ---------- Helpers ---------- */
+const $ = id => document.getElementById(id);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const lerp = (a,b,t) => a + (b-a)*t;
+const easeOut = t => 1 - Math.pow(1-t, 3);
+const money = v => (v < 0 ? '-$' : '$') + Math.abs(v).toLocaleString(undefined,{maximumFractionDigits:0});
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+const state = {
+  level:0, chip:null, card:null, dies:[], mode:null, issues:{},
+  odStatus:'ok', tilt:0, setupsDone:0,
+  running:false, paused:false, pauseUntil:0, lastT:0, remaining:0, timedOut:false,
+  phase:'idle', phaseT:0, head:null, prevHead:null, target:null, path:[], eventsAt:{},
+  touchdowns:0, spent:0, penalty:{contam:false, drift:false}, missed:0, activeEvent:null,
+  seen:new Set(), results:[], totals:{ profit:0, escapes:0, shipped:{} }, lastResult:null,
+  buildStep:0, ch1Grade:'', ch2Grade:'',
+};
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  $(id).classList.remove('hidden');
+  window.scrollTo({ top:0 });
+}
+function setHeader(){
+  $('progress').textContent = state.chip ? `Chip ${state.level+1} of ${CHIPS.length}` : state.buildStep ? `Step ${state.buildStep} of 6` : '';
+  $('noteCount').textContent = `Notes ${state.seen.size}/${NOTE_TOTAL}`;
+}
+
+/* One-shot animation helper: fn(p) with p 0..1, then done() */
+function anim(ms, fn, done){
+  const dur = reduced ? 0 : ms, t0 = performance.now();
+  const frame = t => {
+    const p = dur ? Math.min(1, (t - t0)/dur) : 1;
+    fn(p);
+    if (p < 1) requestAnimationFrame(frame); else if (done) done();
+  };
+  requestAnimationFrame(frame);
+}
+
+/* ---------- Field notes (bottom sheet) ---------- */
+let noteCb = null;
+function showNote(id, cb){
+  const n = NOTES[id];
+  if (!n || state.seen.has(id)){ if (cb) cb(); return; }
+  state.seen.add(id); setHeader();
+  state.paused = true;
+  $('noteTitle').textContent = n.title;
+  $('noteBody').textContent = n.body;
+  $('noteFig').innerHTML = n.fig || '';
+  $('noteKicker').textContent = `Field note ${state.seen.size} of ${NOTE_TOTAL}`;
+  noteCb = cb || null;
+  $('note').classList.add('open');
+  $('btnNote').focus({ preventScroll:true });
+}
+$('btnNote').addEventListener('click', () => {
+  $('note').classList.remove('open');
+  state.paused = false;
+  const cb = noteCb; noteCb = null;
+  if (cb) cb();
+});
+
+/* ---------- Wafer geometry and drawing ---------- */
+function buildDies(chip){
+  const n = chip.grid, R = n/2, dies = [];
+  const clusters = [];
+  for (let i = 0; i < (chip.clusters || 0); i++){
+    const a = Math.random()*Math.PI*2, d = Math.random()*(R-1.5);
+    clusters.push({ x:R + Math.cos(a)*d, y:R + Math.sin(a)*d });
+  }
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++){
+    const dx = c + 0.5 - R, dy = r + 0.5 - R, dist = Math.hypot(dx, dy);
+    if (dist > R - 0.6) continue;
+    let p = chip.failRate + (chip.edgeLoss || 0) * Math.pow(dist/R, 3);
+    for (const k of clusters) if (Math.hypot(c+0.5-k.x, r+0.5-k.y) < 1.6) p += 0.55;
+    dies.push({ r, c, bad: Math.random() < p, status:'untested', false:false });
+  }
+  return dies;
+}
+
+function sizeCanvas(cv, h){
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.min(cv.clientWidth || 300, (cv.parentElement && cv.parentElement.clientWidth) || 440, 600), hh = h || w;
+  if (cv.width !== Math.round(w*dpr) || cv.height !== Math.round(hh*dpr)){ cv.width = Math.round(w*dpr); cv.height = Math.round(hh*dpr); }
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w, h: hh };
+}
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y); ctx.closePath();
+}
+
+/* Draws a wafer map into any context at (x0,y0) with side S. head = {r0,c0,k,alpha,progress} | {full:true,alpha,progress} */
+function drawWaferAt(ctx, x0, y0, S, dies, n, head, bg){
+  const cx = x0 + S/2, cy = y0 + S/2, R = S/2 - S*0.02;
+  const g = ctx.createLinearGradient(x0, y0, x0+S, y0+S);
+  g.addColorStop(0, '#3C4A56'); g.addColorStop(0.5, '#26323B'); g.addColorStop(1, '#3E4D5A');
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2); ctx.fillStyle = g; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx, cy + R, S*0.02, 0, Math.PI*2); ctx.fillStyle = bg || css('--bg'); ctx.fill();
+
+  const cell = (2*R)/n, gap = Math.max(1, cell*0.12), rad = Math.min(3, cell*0.15);
+  for (const d of dies){
+    const x = cx - R + d.c*cell + gap/2, y = cy - R + d.r*cell + gap/2, s = cell - gap;
+    if (d.status === 'partial'){
+      ctx.fillStyle = 'rgba(240,180,60,0.22)'; roundRect(ctx, x, y, s, s, rad); ctx.fill();
+      const lw = Math.max(1, s*0.14);
+      ctx.strokeStyle = '#F0B43C'; ctx.lineWidth = lw; roundRect(ctx, x+lw/2, y+lw/2, s-lw, s-lw, rad); ctx.stroke();
+      continue;
+    }
+    ctx.fillStyle = d.status === 'pass' ? '#22B36A' : d.status === 'fail' ? '#E6583C'
+      : d.status === 'damaged' ? '#6E1E1E' : 'rgba(255,255,255,0.13)';
+    roundRect(ctx, x, y, s, s, rad); ctx.fill();
+    if (d.status === 'damaged'){
+      ctx.strokeStyle = '#F2B0A2'; ctx.lineWidth = Math.max(1, s*0.12);
+      ctx.beginPath(); ctx.moveTo(x+s*0.25, y+s*0.25); ctx.lineTo(x+s*0.75, y+s*0.75);
+      ctx.moveTo(x+s*0.75, y+s*0.25); ctx.lineTo(x+s*0.25, y+s*0.75); ctx.stroke();
+    }
+  }
+  if (head){
+    ctx.fillStyle = `rgba(255,255,255,${head.alpha || 0})`;
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 2;
+    if (head.full){
+      ctx.beginPath(); ctx.arc(cx, cy, R - 2, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    } else {
+      const x = cx - R + head.c0*cell, y = cy - R + head.r0*cell, s = head.k*cell;
+      roundRect(ctx, x, y, s, s, 4); ctx.fill(); ctx.stroke();
+    }
+    if (head.progress > 0){
+      ctx.beginPath(); ctx.arc(cx, cy, R + S*0.01, -Math.PI/2, -Math.PI/2 + Math.PI*2*head.progress);
+      ctx.strokeStyle = '#0F7F8B'; ctx.lineWidth = S*0.018; ctx.stroke();
+    }
+  }
+}
+function drawWafer(cv, dies, n, head){
+  const { ctx, w:S } = sizeCanvas(cv);
+  ctx.clearRect(0, 0, S, S);
+  drawWaferAt(ctx, 0, 0, S, dies, n, head);
+}
+
+/* ---------- Pads at true scale (next to a hair) ---------- */
+function drawPadScale(cv, chip){
+  const { ctx, w:W, h:H } = sizeCanvas(cv, 120);
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#F2F5F7'; roundRect(ctx, 0, 0, W, H, 10); ctx.fill();
+  const um = W / 380;
+  ctx.beginPath(); ctx.arc(50*um, 60*um, 35*um, 0, Math.PI*2); ctx.fillStyle = '#A9866B'; ctx.fill();
+  const p = chip.pitch, s = p*0.55;
+  ctx.fillStyle = '#C9A24C';
+  if (chip.layout === 'array'){
+    for (let y = 14; y + s <= 108; y += p) for (let x = 112; x + s <= 372; x += p) ctx.fillRect(x*um, y*um, s*um, s*um);
+  } else {
+    const y = 60 - s/2;
+    for (let x = 112; x + s <= 372; x += p) ctx.fillRect(x*um, y*um, s*um, s*um);
+  }
+}
+
+/* =====================================================================
+   Chip briefing and card choice
+   ===================================================================== */
+function modeFor(chip, card){
+  if (card.fullWafer && chip.fullOK) return { type:'full', k:chip.grid };
+  return { type:'block', k: Math.min(card.sites, chip.maxSites) };
+}
+function modeLabel(chip, card){
+  const m = modeFor(chip, card);
+  if (m.type === 'full') return 'the whole wafer in one touchdown';
+  return m.k === 1 ? 'one die per touchdown' : `${m.k}×${m.k} dies per touchdown`;
+}
+function matchIssues(chip, card){
+  const o = {};
+  if (chip.pitch < card.minPitch) o.pitch = `This card's tips can't sit closer than ${card.minPitch} µm, but these pads are ${chip.pitch} µm apart. Neighbouring tips shorted together and scraped the pads.`;
+  if (!card.layouts.includes(chip.layout)) o.layout = `A ${card.name.toLowerCase()} only reaches ${card.reach}. This die has ${chip.layoutLabel.toLowerCase()}, so most of it was never touched and every die shipped untested.`;
+  if (chip.current > card.maxCurrent) o.current = 'This chip pulls more current than the tips can carry, so they overheat and burn pads.';
+  return o;
+}
+
+function openBrief(){
+  const chip = state.chip = CHIPS[state.level];
+  state.card = null; state.dies = buildDies(chip); state.odStatus = 'ok'; state.tilt = 0;
+  setHeader();
+  $('chipName').textContent = chip.name;
+  $('chipTag').textContent = chip.tagline;
+  $('chipLayout').textContent = chip.layoutLabel;
+  $('chipPitch').textContent = `${chip.pitch} µm`;
+  $('chipCurrent').textContent = chip.currentLabel;
+  $('chipTemp').textContent = `${chip.temp} °C`;
+  $('chipDies').textContent = state.dies.length;
+  $('chipValue').textContent = money(chip.dieValue);
+  $('chipSites').textContent = chip.fullOK ? 'Whole wafer, with the right card' : chip.maxSites === 1 ? 'One. The die is huge.' : `Up to ${chip.maxSites}×${chip.maxSites}`;
+  $('chipTime').textContent = `${chip.time} seconds`;
+  $('padCaption').textContent = `Left: a human hair, 70 µm wide. Right: this chip's pads, ${chip.pitch} µm apart, so about ${(70/chip.pitch).toFixed(1)} pads fit across one hair.`;
+
+  const list = $('cardList'); list.innerHTML = '';
+  CARDS.forEach(card => {
+    const el = document.createElement('button');
+    el.type = 'button'; el.className = 'card'; el.setAttribute('aria-pressed', 'false');
+    el.innerHTML = `
+      <div class="card-head"><span class="card-name">${card.name}</span><span class="card-cost">${money(card.waferCost)} per wafer</span></div>
+      <p class="card-tech">${card.tech}</p>
+      <ul class="card-specs">
+        <li>Finest pitch ${card.minPitch} µm</li>
+        <li>Reaches ${card.reach}</li>
+        <li>On this chip: ${modeLabel(chip, card)}, ${money(card.touchdownCost)} per touchdown</li>
+        <li>Carries ${card.currentLabel} current</li>
+      </ul>
+      <div class="xsec hidden">${XSEC[card.id]}</div>`;
+    el.addEventListener('click', () => {
+      state.card = card;
+      list.querySelectorAll('.card').forEach(c => { c.setAttribute('aria-pressed', String(c === el)); c.querySelector('.xsec').classList.toggle('hidden', c !== el); });
+      state.seen.add('card-' + card.id); setHeader();
+      $('btnLoad').disabled = false;
+    });
+    list.appendChild(el);
+  });
+  $('btnLoad').disabled = true;
+  show('s-brief');
+  drawPadScale($('padScale'), chip);
+  if (state.level === 0) showNote('why-test');
+}
+
+/* =====================================================================
+   Loading the wafer: FOUP, notch, alignment, temperature, overdrive, planarity
+   ===================================================================== */
+const stage = html => { $('loadStage').innerHTML = html; };
+const caption = t => { $('loadCaption').textContent = t; };
+const controls = html => { $('loadControls').innerHTML = html; };
+let oscOn = false;
+
+function foupSVG(){
+  const slots = [0,1,2,3,5,6,7].map(i => `<line x1="36" y1="${78+i*12}" x2="96" y2="${78+i*12}" stroke="#5A6B78" stroke-width="3"/>`).join('');
+  let pins = ''; for (let x = 248; x <= 312; x += 6) pins += `<line x1="${x}" y1="54" x2="${x}" y2="64" stroke="#8A98A4" stroke-width="1.5"/>`;
+  return `<svg viewBox="0 0 360 200">${WG}
+    <rect x="0" y="182" width="360" height="18" fill="#DDE3E8"/>
+    <g id="ldAMR" transform="translate(-150,0)">
+      <rect x="10" y="176" width="112" height="14" rx="5" fill="#5C6B74"/><circle cx="30" cy="192" r="6" fill="#2B3844"/><circle cx="102" cy="192" r="6" fill="#2B3844"/><circle cx="118" cy="183" r="3" fill="#22B36A"/>
+      <rect x="18" y="58" width="96" height="120" rx="8" fill="#C9D3DB" stroke="#9AA9B5"/>
+      <rect x="26" y="66" width="80" height="106" rx="4" fill="#EEF2F5"/>${slots}${T(66,50,'FOUP on a mobile robot')}
+    </g>
+    <rect x="226" y="40" width="108" height="14" rx="3" fill="#2E6B3F"/>${pins}${T(280,32,'probe card')}
+    <rect x="218" y="150" width="124" height="24" fill="#6C7A86"/><ellipse cx="280" cy="174" rx="62" ry="12" fill="#5E6B77"/><ellipse cx="280" cy="150" rx="62" ry="12" fill="#7F8E9A"/>${T(280,196,'chuck')}
+    ${armSVG('ldArmR', 172, 190)}
+    <g id="ldWafer" transform="translate(66,126)"><rect x="-28" y="6" width="56" height="5" rx="2" fill="#8A98A4"/><ellipse rx="44" ry="10" fill="url(#wg)"/></g>
+  </svg>`;
+}
+function notchSVG(a){
+  return `<svg viewBox="0 0 360 226">${WG}
+    <g id="ldRot" transform="rotate(${a.toFixed(0)} 180 110)"><circle cx="180" cy="110" r="90" fill="url(#wg)"/><circle cx="180" cy="110" r="90" fill="url(#grid)"/><path d="M270 110 l-12 -7 v14 z" fill="#F2F5F7"/></g>
+    <path d="M180 220 l-7 -12 h14 z" fill="#0F7F8B"/>${T(196,222,'notch goes here','start')}
+  </svg>`;
+}
+function alignSVG(){
+  let pads = ''; for (let r = 0; r < 4; r++) for (let c = 0; c < 6; c++) pads += `<rect x="${60+c*44}" y="${34+r*40}" width="26" height="26" fill="#C9A24C"/>`;
+  return `<svg viewBox="0 0 360 200"><rect width="360" height="200" fill="#1D262E"/>${pads}
+    <g id="ldCross" transform="translate(-34,26)"><circle cx="161" cy="87" r="17" fill="none" stroke="#22B36A" stroke-width="2"/>
+    <path d="M135 87 h52 M161 61 v52" stroke="#22B36A" stroke-width="1.5"/></g>
+    <text id="ldRead" x="180" y="190" font-size="12" fill="#9FB0BC" text-anchor="middle" font-family="Manrope,system-ui,sans-serif">offset 43 µm</text>
+  </svg>`;
+}
+function thermoSVG(){
+  return `<svg viewBox="0 0 360 200">${WG}
+    <circle id="ldChuck" cx="150" cy="105" r="72" fill="#7F8E9A"/><circle cx="150" cy="105" r="60" fill="url(#wg)"/><circle cx="150" cy="105" r="60" fill="url(#grid)"/>
+    ${T(150,194,'wafer on the chuck')}
+    <rect x="290" y="28" width="16" height="132" rx="8" fill="#EEF2F5" stroke="#9AA9B5"/>
+    <rect id="ldTh" x="294" y="150" width="8" height="4" rx="4" fill="#9AA9B5"/>
+    <circle id="ldBulb" cx="298" cy="166" r="12" fill="#9AA9B5"/>
+    <text id="ldTemp" x="298" y="196" font-size="12" fill="#5C6B74" text-anchor="middle" font-family="Manrope,system-ui,sans-serif">25 °C</text>
+  </svg>`;
+}
+function odSVG(card){
+  return `<svg viewBox="0 0 360 200">
+    <rect x="40" y="140" width="280" height="40" fill="#5A6B78"/>
+    <rect x="140" y="128" width="80" height="12" fill="#C9A24C"/><rect x="140" y="126" width="80" height="2.5" fill="#EDE2B8"/>
+    <line x1="40" y1="126" x2="320" y2="126" stroke="#0F7F8B" stroke-dasharray="4 4"/>${T(46,120,'first touch','start')}${T(226,122,'oxide skin','start')}
+    <g id="ldCrack" opacity="0"><path d="M168 131 l9 6 M186 130 l-6 9 M158 132 l5 7" stroke="#E6583C" stroke-width="2"/></g>
+    <rect id="ldScrub" x="180" y="128" width="0" height="4" fill="#7A6A2A"/>
+    <g id="ldTip" transform="translate(0,0)"><path d="M172 30 h16 l-8 96 z" fill="#8A98A4"/></g>
+    <text id="ldOd" x="180" y="20" font-size="12" fill="#18242C" text-anchor="middle" font-family="Manrope,system-ui,sans-serif">0 µm past first touch</text>
+    ${T(180,196,`card datasheet: ${card.od[0]} to ${card.od[1]} µm`)}
+  </svg>`;
+}
+function levelSVG(){
+  let pins = ''; for (let x = 80; x <= 280; x += 6) pins += `<line x1="${x}" y1="112" x2="${x}" y2="122" stroke="#8A98A4" stroke-width="1.5"/>`;
+  return `<svg viewBox="0 0 360 200">${WG}
+    <rect x="60" y="30" width="240" height="28" rx="14" fill="#EEF2F5" stroke="#9AA9B5"/>
+    <line x1="168" y1="30" x2="168" y2="58" stroke="#9AA9B5"/><line x1="192" y1="30" x2="192" y2="58" stroke="#9AA9B5"/>
+    <circle id="ldBubble" cx="180" cy="44" r="11" fill="#22B36A"/>${T(180,74,'bubble level on the card')}
+    <g id="ldCard" transform="rotate(0 180 110)"><rect x="70" y="100" width="220" height="12" rx="3" fill="#2E6B3F"/>${pins}</g>
+    <ellipse cx="180" cy="150" rx="110" ry="14" fill="url(#wg)"/>${T(180,190,'full-wafer card over the whole wafer')}
+  </svg>`;
+}
+
+const STEP = {};
+STEP.foup = next => {
+  $('loadTitle').textContent = 'Loading the wafer';
+  stage(foupSVG()); controls('');
+  caption('A mobile robot brings the FOUP from the previous tool.');
+  const w = $('ldWafer'), amr = $('ldAMR');
+  w.setAttribute('opacity', '0');
+  setArm('ldArmR', 172, 190, 110, 100, 200, 100);
+  anim(1100, p => amr.setAttribute('transform', `translate(${(-150*(1-easeOut(p))).toFixed(1)},0)`), () => {
+  w.setAttribute('opacity', '1');
+  caption('The prober\'s arm lifts the wafer out on a vacuum paddle and sets it on the chuck.');
+  anim(1700, p => {
+    const e = easeOut(p), x = lerp(66, 280, e), y = lerp(126, 146, e) - 46*Math.sin(Math.PI*e);
+    w.setAttribute('transform', `translate(${x.toFixed(1)},${y.toFixed(1)})`);
+    setArm('ldArmR', 172, 190, 110, 100, x, y + 9);
+  }, () => { caption('Wafer on the chuck, held down by vacuum.'); showNote('foup', next); });
+  });
+};
+STEP.notch = next => {
+  $('loadTitle').textContent = 'Find the notch';
+  const start = 150 + Math.random()*180;
+  stage(notchSVG(start));
+  controls(`<input id="ldSlider" class="range" type="range" min="0" max="360" step="1" value="${start.toFixed(0)}" aria-label="Rotate the wafer"><button id="ldLock" class="btn" type="button" disabled>Lock the notch</button>`);
+  const rot = $('ldRot'), sl = $('ldSlider'), btn = $('ldLock');
+  const update = () => {
+    const a = +sl.value; rot.setAttribute('transform', `rotate(${a} 180 110)`);
+    const d = Math.abs((((a - 90) % 360) + 540) % 360 - 180);
+    btn.disabled = d > 6;
+    caption(d > 6 ? `Rotate the wafer until the notch points at the marker. ${d.toFixed(0)}° to go.` : 'Aligned. Lock it in.');
+  };
+  sl.addEventListener('input', update); update();
+  btn.addEventListener('click', () => showNote('notch', next));
+};
+STEP.align = next => {
+  $('loadTitle').textContent = 'Probe-to-pad alignment';
+  stage(alignSVG()); controls('');
+  caption('The camera finds the pads and the prober drives the chuck until the tips line up.');
+  const cross = $('ldCross'), read = $('ldRead');
+  anim(1500, p => {
+    const e = easeOut(p), dx = -34*(1-e), dy = 26*(1-e);
+    cross.setAttribute('transform', `translate(${dx.toFixed(1)},${dy.toFixed(1)})`);
+    read.textContent = p < 1 ? `offset ${Math.round(Math.hypot(dx, dy))} µm` : 'locked, 1 µm';
+  }, () => { caption('Locked to within a micron.'); showNote('ptpa', next); });
+};
+STEP.temp = next => {
+  const chip = state.chip;
+  $('loadTitle').textContent = 'Set the chuck temperature';
+  stage(thermoSVG()); controls('');
+  caption(chip.temp === 25 ? 'This chip is tested at room temperature.' : `Heating the chuck to ${chip.temp} °C.`);
+  const th = $('ldTh'), bulb = $('ldBulb'), txt = $('ldTemp'), chuck = $('ldChuck');
+  const col = chip.temp > 40 ? '#E6583C' : chip.temp < 0 ? '#3B82F6' : '#9AA9B5';
+  const tint = chip.temp > 40 ? '#C97A5A' : chip.temp < 0 ? '#6A9BD8' : '#7F8E9A';
+  anim(1200, p => {
+    const t = lerp(25, chip.temp, easeOut(p)), h = 4 + (t + 40)/190*118;
+    th.setAttribute('height', h.toFixed(1)); th.setAttribute('y', (154 - h).toFixed(1));
+    th.setAttribute('fill', col); bulb.setAttribute('fill', col); chuck.setAttribute('fill', p > 0.5 ? tint : '#7F8E9A');
+    txt.textContent = `${Math.round(t)} °C`;
+  }, () => showNote('temp', next));
+};
+STEP.overdrive = next => {
+  const card = state.card;
+  $('loadTitle').textContent = 'Set the overdrive';
+  stage(odSVG(card));
+  controls(`<input id="ldOdSl" class="range" type="range" min="0" max="120" step="5" value="0" aria-label="Overdrive in microns"><button id="ldOdBtn" class="btn" type="button">Set overdrive</button>`);
+  caption('How far past first touch should the tips press? Check the card datasheet under the picture.');
+  const sl = $('ldOdSl'), tip = $('ldTip'), scrub = $('ldScrub'), crack = $('ldCrack'), read = $('ldOd');
+  const update = () => {
+    const od = +sl.value;
+    tip.setAttribute('transform', `translate(0,${(od*0.09).toFixed(1)})`);
+    scrub.setAttribute('width', Math.min(40, od*0.45).toFixed(1));
+    crack.setAttribute('opacity', od > card.od[1] ? '1' : '0');
+    read.textContent = `${od} µm past first touch`;
+  };
+  sl.addEventListener('input', update); update();
+  $('ldOdBtn').addEventListener('click', () => {
+    const od = +sl.value;
+    state.odStatus = od < card.od[0] ? 'under' : od > card.od[1] ? 'over' : 'ok';
+    showNote('overdrive', next);
+  });
+};
+STEP.planarity = next => {
+  $('loadTitle').textContent = 'Level the card';
+  stage(levelSVG());
+  controls('<button id="ldLevel" class="btn" type="button">Hold it level</button>');
+  caption('A full-wafer card has to sit flat across the whole wafer. Tap when the bubble is centred.');
+  const bubble = $('ldBubble'), cardEl = $('ldCard');
+  oscOn = true; let off = 0; const t0 = performance.now();
+  const frame = t => {
+    if (!oscOn) return;
+    off = 72*Math.sin((t - t0)/(reduced ? 1400 : 520));
+    bubble.setAttribute('cx', (180 + off).toFixed(1));
+    cardEl.setAttribute('transform', `rotate(${(off/72*5).toFixed(2)} 180 110)`);
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+  $('ldLevel').addEventListener('click', () => {
+    oscOn = false;
+    const tilt = off/72;
+    state.tilt = Math.abs(tilt) < 0.17 ? 0 : tilt;
+    caption(state.tilt === 0 ? 'Level. Every die will make contact.' : `Tilted. The ${tilt > 0 ? 'right' : 'left'} edge sits ${Math.round(Math.abs(tilt)*40)} µm high, so those dies may not touch.`);
+    bubble.setAttribute('fill', state.tilt === 0 ? '#22B36A' : '#E6583C');
+    showNote('full-wafer', next);
+  });
+};
+
+function runLoading(){
+  state.mode = modeFor(state.chip, state.card);
+  const steps = ['foup','notch','align','temp','overdrive'];
+  if (state.mode.type === 'full') steps.push('planarity');
+  $('btnSkipLoad').classList.toggle('hidden', state.setupsDone === 0);
+  let i = 0;
+  const next = () => { if (i >= steps.length){ preRun(); return; } STEP[steps[i++]](next); };
+  show('s-load'); next();
+}
+$('btnSkipLoad').addEventListener('click', () => { oscOn = false; state.odStatus = 'ok'; state.tilt = 0; preRun(); });
+$('btnLoad').addEventListener('click', runLoading);
+
+function preRun(){
+  state.setupsDone++;
+  if (state.chip.maxSites === 1) showNote('single-site', startRun); else startRun();
+}
+
+/* =====================================================================
+   Running the prober
+   ===================================================================== */
+const MOVE_MS = 260;
+function inBlock(d, b){ return d.r >= b.r0 && d.r < b.r0 + b.k && d.c >= b.c0 && d.c < b.c0 + b.k; }
+function hasUntested(b){ return b.full ? state.dies.some(d => d.status === 'untested') : state.dies.some(d => d.status === 'untested' && inBlock(d, b)); }
+
+function buildPath(){
+  const n = state.chip.grid;
+  if (state.mode.type === 'full') return [{ full:true }];
+  const k = state.mode.k, path = []; let dir = 1;
+  for (let r0 = 0; r0 < n; r0 += k){
+    const cols = []; for (let c0 = 0; c0 < n; c0 += k) cols.push(c0);
+    if (dir < 0) cols.reverse();
+    for (const c0 of cols){ const b = { r0, c0, k }; if (state.dies.some(d => inBlock(d, b))) path.push(b); }
+    dir = -dir;
+  }
+  return path;
+}
+
+function startRun(){
+  const chip = state.chip, card = state.card;
+  state.issues = matchIssues(chip, card);
+  state.spent = card.waferCost; state.touchdowns = 0; state.missed = 0;
+  state.remaining = chip.time*1000; state.lastT = 0; state.paused = false; state.pauseUntil = 0; state.timedOut = false;
+  state.penalty = { contam:false, drift:false }; state.activeEvent = null; state.fixMsg = null;
+  state.path = buildPath(); state.pathIdx = 0;
+  state.eventsAt = {};
+  const L = state.path.length;
+  if (L >= 6){ state.eventsAt[Math.floor(L*0.3)] = 'contam'; state.eventsAt[Math.floor(L*0.65)] = chip.temp >= 85 ? 'drift' : 'contam'; }
+  state.phase = 'idle'; state.phaseT = 0; state.head = null; state.prevHead = null; state.target = null;
+  $('eventBox').classList.add('hidden');
+  $('runStatus').textContent = '';
+  state.running = true;
+  show('s-run');
+  requestAnimationFrame(loop);
+}
+
+function loop(t){
+  if (!state.running) return;
+  const dt = state.lastT ? Math.min(60, t - state.lastT) : 0; state.lastT = t;
+  const held = state.paused || t < state.pauseUntil;
+  if (!held){ state.remaining -= dt; tickEvent(dt); advance(dt); }
+  if (!state.running) return;
+  renderRun(held);
+  if (state.remaining <= 0){ state.timedOut = true; finishLevel(); return; }
+  requestAnimationFrame(loop);
+}
+
+function advance(dt){
+  const chip = state.chip, card = state.card;
+  state.phaseT += dt;
+  if (state.phase === 'idle'){
+    while (state.pathIdx < state.path.length && !hasUntested(state.path[state.pathIdx])) state.pathIdx++;
+    if (state.pathIdx >= state.path.length){ finishLevel(); return; }
+    state.target = state.path[state.pathIdx];
+    const ev = state.eventsAt[state.touchdowns];
+    if (ev && !state.activeEvent) spawnEvent(ev);
+    if (state.prevHead && !state.target.full){ state.phase = 'move'; }
+    else { state.phase = 'down'; state.head = Object.assign({ alpha:0.1, progress:0 }, state.target); }
+    state.phaseT = 0; return;
+  }
+  if (state.phase === 'move'){
+    const p = Math.min(1, state.phaseT/MOVE_MS), e = easeOut(p);
+    state.head = { r0: lerp(state.prevHead.r0, state.target.r0, e), c0: lerp(state.prevHead.c0, state.target.c0, e), k: state.target.k, alpha:0.1, progress:0 };
+    if (p >= 1){ state.phase = 'down'; state.phaseT = 0; state.head = Object.assign({ alpha:0.1, progress:0 }, state.target); }
+    return;
+  }
+  if (state.phase === 'down'){
+    const dur = state.target.full ? 1200 : card.touchdownMs, p = Math.min(1, state.phaseT/dur);
+    state.head.alpha = 0.1 + 0.5*p;
+    if (p >= 1){ state.phase = 'test'; state.phaseT = 0; }
+    return;
+  }
+  if (state.phase === 'test'){
+    const dur = state.target.full ? chip.fullTestMs : chip.testMs, p = Math.min(1, state.phaseT/dur);
+    state.head.progress = p;
+    if (p >= 1){
+      reveal(state.target);
+      state.touchdowns++; state.spent += card.touchdownCost;
+      state.prevHead = state.target; state.head = null; state.pathIdx++;
+      state.phase = 'idle'; state.phaseT = 0;
+    }
+  }
+}
+
+function reveal(t){
+  const chip = state.chip, issues = state.issues, pen = state.penalty, n = chip.grid;
+  const list = t.full ? state.dies : state.dies.filter(d => inBlock(d, t));
+  for (const d of list){
+    if (d.status !== 'untested') continue;
+    if (t.full && state.tilt){
+      const side = (d.c + 0.5 - n/2)/(n/2);
+      if (side*Math.sign(state.tilt) > 1 - Math.abs(state.tilt)*0.6) continue;
+    }
+    const r = Math.random();
+    if (issues.pitch) d.status = 'damaged';
+    else if (issues.layout) d.status = 'partial';
+    else if (state.odStatus === 'over' && r < 0.35) d.status = 'damaged';
+    else if (state.odStatus === 'under' && r < 0.4){ d.status = 'fail'; d.false = !d.bad; }
+    else if (pen.contam && r < 0.5){ d.status = 'fail'; d.false = !d.bad; }
+    else if (pen.drift && r < 0.5) d.status = 'damaged';
+    else if (issues.current && r < 0.2) d.status = 'damaged';
+    else d.status = d.bad ? 'fail' : 'pass';
+  }
+}
+
+function renderRun(held){
+  const chip = state.chip;
+  drawWafer($('wafer'), state.dies, chip.grid, state.head);
+  $('hudTime').textContent = (Math.max(0, state.remaining)/1000).toFixed(1);
+  $('hudTested').textContent = `${state.dies.filter(d => d.status === 'pass' || d.status === 'fail').length}/${state.dies.length}`;
+  $('hudBad').textContent = state.dies.filter(d => d.status === 'fail').length;
+  $('hudSpent').textContent = money(state.spent);
+  const L = state.path.length, i = state.touchdowns + 1, t = state.target;
+  let s = '';
+  if (held && state.fixMsg) s = state.fixMsg;
+  else if (state.phase === 'move') s = `Stepping to site ${i} of ${L}`;
+  else if (state.phase === 'down') s = t && t.full ? 'Touching down on every die at once' : `Touchdown ${i} of ${L}`;
+  else if (state.phase === 'test') s = t && t.full ? `Testing all ${state.dies.length} dies in parallel` : `Testing ${t.k*t.k === 1 ? 'the die' : t.k*t.k + ' dies'}`;
+  $('runStatus').textContent = s;
+}
+
+/* Live prober events */
+function spawnEvent(type){
+  state.activeEvent = { type, left:5000, expired:false };
+  state.seen.add(type === 'contam' ? 'clean' : 'drift'); setHeader();
+  $('eventBox').classList.remove('hidden');
+  $('eventText').textContent = type === 'contam'
+    ? 'Tips are picking up aluminum. Contact resistance is climbing, and good dies will start reading as bad.'
+    : 'Thermal drift: the tips are walking off the pads. The next touchdowns will short to the neighbours.';
+  $('btnEvent').textContent = type === 'contam' ? 'Clean the tips' : 'Re-align the card';
+  $('eventBar').style.width = '100%';
+}
+function tickEvent(dt){
+  const e = state.activeEvent; if (!e || e.expired) return;
+  e.left -= dt; $('eventBar').style.width = Math.max(0, e.left/50) + '%';
+  if (e.left <= 0){
+    e.expired = true; state.penalty[e.type] = true; state.missed++;
+    $('eventText').textContent = e.type === 'contam'
+      ? 'Tips are contaminated. Good dies are reading as bad until you clean them.'
+      : 'Alignment lost. Tips are shorting between pads until you re-align.';
+  }
+}
+$('btnEvent').addEventListener('click', () => {
+  const e = state.activeEvent; if (!e) return;
+  state.penalty[e.type] = false; state.activeEvent = null;
+  state.pauseUntil = performance.now() + 700;
+  state.fixMsg = e.type === 'contam' ? 'Cleaning the tips on the abrasive pad' : 'Re-aligning the tips to the pads';
+  $('eventBox').classList.add('hidden');
+});
+$('btnShip').addEventListener('click', () => { if (state.running) finishLevel(); });
+
+/* =====================================================================
+   Scoring
+   ===================================================================== */
+function finishLevel(){
+  if (!state.running) return;
+  state.running = false; oscOn = false;
+  $('eventBox').classList.add('hidden');
+  const chip = state.chip, card = state.card, dies = state.dies, issues = state.issues, mode = state.mode;
+  const total = dies.length;
+  const tested = dies.filter(d => d.status === 'pass' || d.status === 'fail').length;
+  const untested = dies.filter(d => d.status === 'untested').length;
+  const damaged = dies.filter(d => d.status === 'damaged').length;
+  const escapes = dies.filter(d => d.bad && (d.status === 'untested' || d.status === 'partial')).length;
+  const lost = dies.filter(d => !d.bad && (d.status === 'damaged' || d.false)).length;
+  const shippedGood = dies.filter(d => !d.bad && d.status !== 'damaged' && !d.false).length;
+  const revenue = shippedGood*chip.dieValue;
+  const profit = revenue - (state.spent + escapes*chip.escapeCost);
+  const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+  let grade, title, lesson;
+  if (issues.pitch){ grade = 'F'; title = 'Wafer scrapped'; lesson = issues.pitch; }
+  else if (issues.layout){ grade = 'F'; title = 'Bad chips shipped'; lesson = issues.layout + (escapes ? ` ${plural(escapes, 'bad die')} went into products.` : ''); }
+  else if (state.odStatus === 'over'){ grade = profit > 0 ? 'C' : 'F'; title = 'Pads cratered'; lesson = `Overdrive was set above the card's range. The tips punched through the pads and ${plural(damaged, 'die')} can never be bonded. Stay inside the datasheet window.`; }
+  else if (state.odStatus === 'under'){ grade = profit > 0 ? 'C' : 'F'; title = 'Good dies scrapped'; lesson = `Overdrive was below the card's range, so the tips never scrubbed through the oxide. ${plural(lost, 'good die')} read as open and got thrown away. Test result is only as good as the contact.`; }
+  else if (mode.type === 'full' && state.tilt !== 0){ grade = escapes ? 'F' : 'C'; title = 'One edge never touched'; lesson = `The card wasn't level, so ${plural(untested, 'die')} on one edge never made contact. A full-wafer card only works when it is flat to a few microns across 300 mm.`; }
+  else if (state.missed > 0){ grade = profit > 0 ? 'B' : 'F'; title = 'Prober alarm missed'; lesson = `You let a prober alarm run out. ${plural(lost, 'good die')} were lost and ${plural(damaged, 'die')} damaged before the run ended. On a real floor the prober stops and waits, and every minute stopped costs money.`; }
+  else if (state.timedOut && untested > 0 && chip.fullOK && mode.type !== 'full'){
+    const est = Math.round(state.path.length*(MOVE_MS + card.touchdownMs + chip.testMs)/1000);
+    grade = escapes ? 'F' : 'C'; title = 'Too slow';
+    lesson = `${plural(untested, 'die')} never got touched. Memory tests are long: at ${mode.k*mode.k} dies per touchdown this wafer needs about ${est} seconds. A full-wafer MEMS card tests all ${total} dies in one touchdown.`;
+  }
+  else if (state.timedOut && untested > 0){ grade = escapes ? 'F' : 'C'; title = 'Time ran out'; lesson = `${plural(untested, 'die')} never got touched. Each touchdown costs stepping time plus test time, and this shift wasn't long enough for the card you chose.`; }
+  else if (profit < 0 && escapes === 0 && lost === 0){ grade = 'C'; title = 'Perfect test, lost money'; lesson = `Every die tested and nothing bad shipped, but the card cost ${money(card.waferCost)} on a wafer worth ${money(revenue)}. For a simple, low-value chip the needle card is the right tool.`; }
+  else if (escapes === 0 && lost === 0 && tested === total){ grade = 'A'; title = 'Wafer shipped clean'; lesson = `Right card, right setup: every die tested, nothing bad shipped, and the wafer made ${money(profit)}.`; }
+  else { grade = profit > 0 ? 'B' : 'F'; title = 'Wafer shipped'; lesson = issues.current ? issues.current : `${plural(escapes, 'bad die')} slipped through and ${plural(lost, 'good die')} were lost.`; }
+
+  $('grade').textContent = grade;
+  $('grade').style.color = grade === 'A' ? css('--pass') : grade === 'F' ? css('--fail') : css('--ink');
+  $('resultTitle').textContent = title;
+  $('lesson').textContent = lesson;
+  $('resTested').textContent = `${tested} of ${total}`;
+  $('resEscapes').textContent = escapes;
+  $('resLost').textContent = lost;
+  $('resProfit').textContent = money(profit);
+  $('phone').innerHTML = `<svg viewBox="0 0 60 110"><rect x="2" y="2" width="56" height="106" rx="9" fill="#18242C"/><rect x="7" y="12" width="46" height="86" rx="3" fill="${escapes ? '#E6583C' : '#22B36A'}" class="${escapes ? 'glitch' : ''}"/></svg>`;
+  $('phoneCaption').textContent = escapes ? 'One of the escapes went into a product and crashed in a customer\'s hands.' : 'Every chip that shipped works.';
+  $('btnNext').textContent = state.level + 1 < CHIPS.length ? `Next chip: ${CHIPS[state.level+1].name}` : 'See your shift results';
+
+  state.lastResult = { profit, escapes, shippedGood, unit: chip.unit, grade, name: chip.name, dies: dies.map(d => ({ r:d.r, c:d.c, status:d.status })), n: chip.grid };
+  show('s-result');
+  drawWafer($('resultWafer'), dies, chip.grid, null);
+  if (escapes > 0) showNote('escape'); else if (chip.clusters) showNote('yield');
+}
+
+function commitResult(){
+  const r = state.lastResult;
+  state.results[state.level] = r;
+  state.totals.profit += r.profit; state.totals.escapes += r.escapes;
+  state.totals.shipped[r.unit] = (state.totals.shipped[r.unit] || 0) + r.shippedGood;
+}
+$('btnNext').addEventListener('click', () => {
+  commitResult();
+  if (state.level + 1 < CHIPS.length){ state.level++; openBrief(); } else openFinal();
+});
+$('btnRetry').addEventListener('click', openBrief);
+
+/* =====================================================================
+   Final screen and score card
+   ===================================================================== */
+function summaryText(){
+  const t = state.totals;
+  const parts = Object.entries(t.shipped).map(([u, n]) => `${n} working ${n === 1 ? u.replace(/s$/, '') : u}`);
+  const list = parts.length > 1 ? parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length-1] : (parts[0] || 'nothing');
+  return `You shipped ${list}, let ${t.escapes} bad ${t.escapes === 1 ? 'chip' : 'chips'} escape, and finished ${money(Math.abs(t.profit))} ${t.profit >= 0 ? 'up' : 'down'}.`;
+}
+function wrapText(ctx, text, x, y, maxW, lh){
+  const words = text.split(' '); let line = '';
+  for (const w of words){
+    const test = line ? line + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && line){ ctx.fillText(line, x, y); line = w; y += lh; } else line = test;
+  }
+  if (line) ctx.fillText(line, x, y);
+  return y + lh;
+}
+let cardCanvas = null;
+function buildScoreCard(){
+  const W = 1080, H = 1350, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#1C2630'); g.addColorStop(1, '#2E3C48');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#FFFFFF'; ctx.font = '800 66px Manrope, system-ui, sans-serif'; ctx.fillText('Wafer Guardian', 70, 120);
+  ctx.fillStyle = '#9FB0BC'; ctx.font = '500 30px Manrope, system-ui, sans-serif'; ctx.fillText('My shift on the wafer prober', 70, 168);
+  const spots = [[100,230],[620,230],[100,700],[620,700]];
+  state.results.forEach((r, i) => {
+    if (!r || !spots[i]) return;
+    const [x, y] = spots[i];
+    drawWaferAt(ctx, x, y, 360, r.dies, r.n, null, '#22303A');
+    ctx.fillStyle = '#FFFFFF'; ctx.font = '700 30px Manrope, system-ui, sans-serif'; ctx.fillText(r.name, x, y + 410);
+    ctx.fillStyle = r.grade === 'A' ? '#22B36A' : r.grade === 'F' ? '#E6583C' : '#F0B43C';
+    ctx.font = '800 34px Manrope, system-ui, sans-serif'; ctx.fillText(`Grade ${r.grade}`, x, y + 452);
+  });
+  ctx.fillStyle = '#FFFFFF'; ctx.font = '600 32px Manrope, system-ui, sans-serif';
+  const yEnd = wrapText(ctx, summaryText(), 70, 1200, 940, 44);
+  ctx.fillStyle = '#9FB0BC'; ctx.font = '500 26px Manrope, system-ui, sans-serif';
+  ctx.fillText(`Notes collected ${state.seen.size} of ${NOTE_TOTAL}. Play it: ${location.host}${location.pathname}`, 70, Math.max(yEnd + 10, 1300));
+  cardCanvas = cv;
+  $('cardImg').src = cv.toDataURL('image/png');
+}
+function openFinal(){
+  state.chip = null; setHeader();
+  const vals = state.results.filter(Boolean).map(r => gradeValue(r.grade));
+  state.ch1Grade = vals.length ? gradeFromValue(vals.reduce((a, b) => a + b, 0)/vals.length) : '';
+  $('finalSummary').textContent = summaryText();
+  $('finalNotes').textContent = `Field notes collected: ${state.seen.size} of ${NOTE_TOTAL}.`;
+  try { buildScoreCard(); } catch (e) { $('cardImg').alt = 'Score card could not be drawn'; }
+  show('s-final');
+  showNote('package', () => { $('finalNotes').textContent = `Field notes collected: ${state.seen.size} of ${NOTE_TOTAL}.`; });
+}
+$('btnShare').addEventListener('click', async () => {
+  const text = `Wafer Guardian: ${summaryText()} Can you match the probe card to the chip? ${location.href}`;
+  try {
+    if (cardCanvas){
+      const blob = await new Promise(res => cardCanvas.toBlob(res, 'image/png'));
+      const file = new File([blob], 'wafer-guardian-score.png', { type:'image/png' });
+      if (navigator.canShare && navigator.canShare({ files:[file] })){ await navigator.share({ files:[file], text }); return; }
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'wafer-guardian-score.png'; a.click();
+      $('btnShare').textContent = 'Image saved. Post it with your link.';
+      return;
+    }
+    if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); $('btnShare').textContent = 'Copied to clipboard'; }
+  } catch (e) { /* user cancelled */ }
+});
+$('btnAgain').addEventListener('click', () => {
+  state.totals = { profit:0, escapes:0, shipped:{} }; state.results = [];
+  state.level = 0; openBrief();
+});
+
+/* ---------- Intro wafer: one reveal on load ---------- */
+function drawHero(){
+  const cv = $('hero'), n = 13;
+  const dies = buildDies({ grid:n, failRate:0.08, edgeLoss:0.2, clusters:1 });
+  const order = dies.slice().sort((a, b) => a.r - b.r || a.c - b.c);
+  anim(1400, p => {
+    const upto = Math.floor(p*order.length);
+    order.forEach((d, i) => { d.status = i < upto ? (d.bad ? 'fail' : 'pass') : 'untested'; });
+    drawWafer(cv, dies, n, null);
+  });
+}
+window.addEventListener('resize', () => {
+  if (!$('s-run').classList.contains('hidden') && state.chip) drawWafer($('wafer'), state.dies, state.chip.grid, state.head);
+  if (!$('s-brief').classList.contains('hidden') && state.chip) drawPadScale($('padScale'), state.chip);
+});
+
+/* =====================================================================
+   Home, navigation, notebook
+   ===================================================================== */
+let sweepOn = false;
+function stopEverything(){
+  state.running = false; oscOn = false; sweepOn = false; noteCb = null;
+  $('note').classList.remove('open'); state.paused = false; state.buildStep = 0;
+}
+function refreshHome(){
+  $('ch1Grade').textContent = state.ch1Grade || '';
+  $('ch2Grade').textContent = state.ch2Grade || '';
+  $('nbCount').textContent = `${state.seen.size} of ${NOTE_TOTAL} collected`;
+}
+function goHome(){ stopEverything(); state.chip = null; setHeader(); refreshHome(); show('s-home'); drawHero(); }
+$('btnHome').addEventListener('click', goHome);
+$('btnCh1').addEventListener('click', () => { stopEverything(); state.totals = { profit:0, escapes:0, shipped:{} }; state.results = []; state.level = 0; openBrief(); });
+$('btnCh2').addEventListener('click', () => { stopEverything(); startBuild(); });
+$('btnNotes').addEventListener('click', openNotebook);
+$('btnNotesHome').addEventListener('click', goHome);
+$('btnFinalHome').addEventListener('click', goHome);
+$('btnBuildHome').addEventListener('click', goHome);
+
+function openNotebook(){
+  const list = $('noteList'); list.innerHTML = '';
+  Object.entries(NOTES).forEach(([id, n]) => {
+    const seen = state.seen.has(id);
+    const el = document.createElement('button');
+    el.type = 'button'; el.className = 'nb' + (seen ? '' : ' locked'); el.disabled = !seen;
+    el.textContent = seen ? n.title : 'Still out there';
+    if (seen) el.addEventListener('click', () => reopenNote(id));
+    list.appendChild(el);
+  });
+  show('s-notes');
+}
+function reopenNote(id){
+  const n = NOTES[id];
+  $('noteTitle').textContent = n.title; $('noteBody').textContent = n.body; $('noteFig').innerHTML = n.fig || '';
+  $('noteKicker').textContent = 'Field note'; noteCb = null; $('note').classList.add('open');
+}
+function gradeValue(g){ return { A:4, B:3, C:2, F:0 }[g] ?? 0; }
+function gradeFromValue(v){ return v >= 3.5 ? 'A' : v >= 2.5 ? 'B' : v >= 1.5 ? 'C' : 'F'; }
+
+/* =====================================================================
+   Robot arm (two-link planar, elbow up) used across the build chapter
+   ===================================================================== */
+function armSVG(id, bx, by){
+  return `<g id="${id}">
+    <rect x="${bx-22}" y="${by-6}" width="44" height="12" rx="4" fill="#5C6B74"/>
+    <path id="${id}-l1" d="M${bx} ${by} L${bx} ${by-60}" stroke="#C7D0D8" stroke-width="14" stroke-linecap="round" fill="none"/>
+    <circle id="${id}-j0" cx="${bx}" cy="${by}" r="10" fill="#0F7F8B"/>
+    <circle id="${id}-j1" cx="${bx}" cy="${by-60}" r="9" fill="#0F7F8B"/>
+    <path id="${id}-l2" d="M${bx} ${by-60} L${bx} ${by-120}" stroke="#C7D0D8" stroke-width="11" stroke-linecap="round" fill="none"/>
+    <circle id="${id}-j2" cx="${bx}" cy="${by-120}" r="7" fill="#0F7F8B"/>
+    <g id="${id}-hand" transform="translate(${bx},${by-120})"><path d="M-8 0 v10 M8 0 v10" stroke="#5C6B74" stroke-width="3" stroke-linecap="round"/><g id="${id}-load"></g></g>
+  </g>`;
+}
+function setArm(id, bx, by, L1, L2, x, y){
+  const dx = x - bx, dy = y - by, d = clamp(Math.hypot(dx, dy), Math.abs(L1-L2)+1, L1+L2-1);
+  const a = Math.atan2(dy, dx);
+  const A = Math.acos(clamp((L1*L1 + d*d - L2*L2)/(2*L1*d), -1, 1));
+  const tx = bx + d*Math.cos(a), ty = by + d*Math.sin(a);
+  const e1 = { x: bx + L1*Math.cos(a - A), y: by + L1*Math.sin(a - A) };
+  const e2 = { x: bx + L1*Math.cos(a + A), y: by + L1*Math.sin(a + A) };
+  const e = e1.y < e2.y ? e1 : e2;
+  $(`${id}-l1`).setAttribute('d', `M${bx} ${by} L${e.x.toFixed(1)} ${e.y.toFixed(1)}`);
+  $(`${id}-j1`).setAttribute('cx', e.x.toFixed(1)); $(`${id}-j1`).setAttribute('cy', e.y.toFixed(1));
+  $(`${id}-l2`).setAttribute('d', `M${e.x.toFixed(1)} ${e.y.toFixed(1)} L${tx.toFixed(1)} ${ty.toFixed(1)}`);
+  $(`${id}-j2`).setAttribute('cx', tx.toFixed(1)); $(`${id}-j2`).setAttribute('cy', ty.toFixed(1));
+  $(`${id}-hand`).setAttribute('transform', `translate(${tx.toFixed(1)},${ty.toFixed(1)})`);
+}
+
+/* =====================================================================
+   Chapter 2: build a MEMS probe card
+   ===================================================================== */
+const N_PROBES = 40000;
+const B = {};
+const BUILD_STEPS = ['design','litho','attach','stack','measure','ship'];
+const bstage = html => { $('buildStage').innerHTML = html; };
+const bcaption = t => { $('buildCaption').textContent = t; };
+const bcontrols = html => { $('buildControls').innerHTML = html; };
+function buildBar(i){ $('buildBar').innerHTML = BUILD_STEPS.map((s, j) => `<i class="${j < i ? 'done' : j === i ? 'now' : ''}"></i>`).join(''); }
+
+function startBuild(){
+  Object.assign(B, { force:3, forceOk:true, doseOk:true, plateOk:true, dose:50, plate:50, errs:[], stackMistakes:0, found:0, missed:0, falseFlags:0 });
+  state.chip = null;
+  let i = 0;
+  const next = () => {
+    if (i >= BUILD_STEPS.length){ buildResult(); return; }
+    buildBar(i); state.buildStep = i + 1; setHeader();
+    BSTEP[BUILD_STEPS[i++]](next);
+  };
+  show('s-build'); next();
+}
+
+const BSTEP = {};
+
+/* --- Step 1: design the spring --- */
+BSTEP.design = next => {
+  $('buildTitle').textContent = 'Design the spring';
+  bstage(`<svg viewBox="0 0 360 230">
+    <rect x="30" y="50" width="30" height="100" fill="#9AA9B5"/>${T(45,44,'anchor')}
+    <path id="bBeam" d="M60 100 L280 100" stroke="#8A98A4" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <g id="bTipG"><path d="M272 100 h16 l-8 14 z" fill="#DDE3E8"/></g>
+    <rect x="240" y="150" width="80" height="10" fill="#C9A24C"/><rect x="200" y="160" width="140" height="20" fill="#5A6B78"/>${T(280,192,'pad on the wafer')}
+    <rect x="40" y="200" width="200" height="10" rx="5" fill="#EEF2F5" stroke="#9AA9B5"/>
+    <rect id="bGauge" x="40" y="200" width="90" height="10" rx="5" fill="#22B36A"/>
+    <line x1="100" y1="196" x2="100" y2="214" stroke="#0F7F8B"/><line x1="160" y1="196" x2="160" y2="214" stroke="#0F7F8B"/>
+    ${T(130,226,'spec window: 2 to 4 gf per tip')}
+    <text id="bForce" x="250" y="209" font-size="12" fill="#18242C" font-family="Manrope,system-ui,sans-serif">3.0 gf</text>
+  </svg>`);
+  bcontrols(`<input id="bThick" class="range" type="range" min="12" max="40" step="1" value="18" aria-label="Beam thickness"><button id="bTest" class="btn ghost" type="button">Press it 40 µm and watch it bend</button><button id="bLock" class="btn" type="button">Lock the design</button>`);
+  const sl = $('bThick');
+  const update = () => {
+    const t = +sl.value, F = 3*Math.pow(t/25, 3);
+    B.force = F;
+    $('bBeam').setAttribute('stroke-width', (t*0.45).toFixed(1));
+    $('bGauge').setAttribute('width', Math.min(200, F*30).toFixed(1));
+    $('bGauge').setAttribute('fill', F < 2 || F > 4 ? '#E6583C' : '#22B36A');
+    $('bForce').textContent = `${F.toFixed(1)} gf`;
+    bcaption(`Beam ${t} µm thick. Force at 40 µm overdrive: ${F.toFixed(1)} gf per tip. Across ${N_PROBES.toLocaleString()} tips that is ${(F*N_PROBES/1000).toFixed(0)} kg pressing on the wafer.`);
+  };
+  sl.addEventListener('input', update); update();
+  $('bTest').addEventListener('click', () => {
+    anim(700, p => {
+      const d = 36*Math.sin(Math.PI*p);
+      $('bBeam').setAttribute('d', `M60 100 Q 190 ${(100 + d*0.35).toFixed(1)} 280 ${(100 + d).toFixed(1)}`);
+      $('bTipG').setAttribute('transform', `translate(0,${d.toFixed(1)})`);
+    });
+  });
+  $('bLock').addEventListener('click', () => {
+    B.forceOk = B.force >= 2 && B.force <= 4;
+    bcaption(B.forceOk ? 'Inside the window. Locked.' : B.force < 2 ? 'Under 2 gf the tip may not break through the pad oxide. Locked anyway; you will see it in metrology.' : 'Over 4 gf the tips crater the pads. Locked anyway; you will see it in metrology.');
+    showNote('force', next);
+  });
+};
+
+/* --- Step 2: lithography --- */
+BSTEP.litho = next => {
+  $('buildTitle').textContent = 'Grow the spring with lithography';
+  bstage(`<svg viewBox="0 0 360 210">
+    <rect x="40" y="150" width="280" height="30" fill="#7F8E9A"/>${T(180,196,'carrier substrate')}
+    <rect id="lResist" x="40" y="100" width="280" height="50" fill="#EBB1C4" opacity="0"/>
+    <g id="lMask" opacity="0"><rect x="40" y="40" width="110" height="8" fill="#2B3844"/><rect x="210" y="40" width="110" height="8" fill="#2B3844"/>${T(180,34,'mask')}</g>
+    <g id="lUV" opacity="0">${[155,165,175,185,195,205].map(x => `<line x1="${x}" y1="12" x2="${x}" y2="100" stroke="#7C4DFF" stroke-width="2"/>`).join('')}</g>
+    <path id="lExp" d="" fill="#B86A87" opacity="0"/>
+    <path id="lMold" d="" fill="#F2F5F7" opacity="0"/>
+    <path id="lMetal" d="" fill="#B0B8BE" opacity="0"/>
+    <rect id="lTip" x="0" y="0" width="0" height="0" fill="#F4F6F8" stroke="#8A98A4" opacity="0"/>
+    <text id="lLabel" x="180" y="128" font-size="11" fill="#5C6B74" text-anchor="middle" font-family="Manrope,system-ui,sans-serif"></text>
+  </svg>`);
+  bcaption('The same lithography that makes the chips makes the springs. One layer at a time.');
+  const expW = dose => 60*(0.7 + dose/100*0.6), expD = dose => dose < 45 ? 50*dose/45 : 50;
+  const trap = (w, depth) => `M${180-w/2} 100 h${w} l${-w*0.08} ${depth} h${-w*0.84} z`;
+  const step2 = () => {
+    bcontrols('<input id="lDose" class="range" type="range" min="0" max="100" step="5" value="30" aria-label="Exposure dose"><button id="lExpose" class="btn" type="button">Expose through the mask</button>');
+    bcaption('Set the UV dose. Too little and the pattern never reaches the substrate. Too much and light scatters, widening the spring.');
+    $('lMask').setAttribute('opacity', '1');
+    const sl = $('lDose');
+    sl.addEventListener('input', () => bcaption(`Dose ${sl.value}. The mask opening is 60 µm; the datasheet wants 45 to 65 for a clean 60 µm line.`));
+    $('lExpose').addEventListener('click', () => {
+      B.dose = +sl.value; B.doseOk = B.dose >= 45 && B.dose <= 65;
+      $('lExp').setAttribute('d', trap(expW(B.dose), expD(B.dose)));
+      anim(900, p => { $('lUV').setAttribute('opacity', String(p < 0.8 ? 1 : (1-p)*5)); $('lExp').setAttribute('opacity', String(Math.min(1, p*1.3))); }, step3);
+    });
+  };
+  const step3 = () => {
+    bcontrols('<button id="lDevelop" class="btn" type="button">Develop</button>');
+    bcaption('Developer dissolves the exposed resist and leaves a mold the shape of the spring.');
+    $('lDevelop').addEventListener('click', () => {
+      $('lMold').setAttribute('d', trap(expW(B.dose), expD(B.dose)));
+      anim(600, p => { $('lMold').setAttribute('opacity', String(p)); $('lExp').setAttribute('opacity', String(1-p)); }, step4);
+    });
+  };
+  const step4 = () => {
+    bcontrols('<input id="lTime" class="range" type="range" min="0" max="100" step="5" value="20" aria-label="Plating time"><button id="lPlate" class="btn" type="button">Electroplate the spring alloy</button>');
+    bcaption('Metal grows up from the substrate inside the mold. Stop at the top: 40 to 60 on the timer fills a 50 µm mold.');
+    $('lLabel').textContent = B.doseOk ? '' : 'resist scum at the bottom';
+    const sl = $('lTime');
+    $('lPlate').addEventListener('click', () => {
+      B.plate = +sl.value; B.plateOk = B.plate >= 40 && B.plate <= 60;
+      const w = expW(B.dose), full = expD(B.dose);
+      anim(1000, p => {
+        const h = Math.min(full, 50*B.plate/50*p), cap = Math.max(0, (B.plate - 60))*0.5*p;
+        const base = B.doseOk ? 150 : 150 - (50 - full);
+        let d = `M${180-w/2*0.92} ${base} h${w*0.92} v${-h} h${-w*0.92} z`;
+        if (cap > 0) d += ` M${180-w/2*0.92-cap} ${base-h} h${w*0.92+2*cap} v${-cap*0.6} h${-(w*0.92+2*cap)} z`;
+        $('lMetal').setAttribute('d', d); $('lMetal').setAttribute('opacity', '1');
+      }, step5);
+    });
+  };
+  const step5 = () => {
+    bcontrols('<button id="lStrip" class="btn" type="button">Strip the resist and release</button>');
+    bcaption('Solvent removes the resist and the sacrificial layer, and the spring stands free.');
+    $('lStrip').addEventListener('click', () => {
+      anim(700, p => { $('lResist').setAttribute('opacity', String(1-p)); $('lMold').setAttribute('opacity', String(1-p)); $('lMask').setAttribute('opacity', String(1-p)); }, () => {
+        const w = expW(B.dose)*0.92;
+        if (!B.doseOk) $('lMetal').setAttribute('transform', 'rotate(-14 180 150)');
+        const msg = !B.doseOk ? 'The mold never cleared to the substrate, so the spring is sitting on resist scum and will lift off.'
+          : B.plate < 40 ? 'Under-plated: the spring is too short to reach the wafer.'
+          : B.plate > 60 ? 'Over-plated: the mushroom on top will short to the neighbouring spring.'
+          : 'A clean spring, 60 µm wide, ready for its tip.';
+        bcaption(msg);
+        $('lTip').setAttribute('x', (180 - w/2*0.6).toFixed(1)); $('lTip').setAttribute('width', (w*0.6).toFixed(1));
+        $('lTip').setAttribute('y', (150 - Math.min(50, 50*B.plate/50) - 8).toFixed(1)); $('lTip').setAttribute('height', '8');
+        bcontrols('<button id="lTipBtn" class="btn" type="button">Plate the hard tip</button>');
+        $('lTipBtn').addEventListener('click', () => {
+          anim(500, p => $('lTip').setAttribute('opacity', String(p)), () => {
+            bcaption('The tip is plated in a hard alloy so it survives a million touchdowns. In production this whole cycle repeats for every layer of the spring.');
+            bcontrols('<button id="lDone" class="btn" type="button">Send the springs to assembly</button>');
+            $('lDone').addEventListener('click', () => showNote('litho', next));
+          });
+        });
+      });
+    });
+  };
+  bcontrols('<button id="lSpin" class="btn" type="button">Spin on photoresist</button>');
+  $('lSpin').addEventListener('click', () => anim(600, p => $('lResist').setAttribute('opacity', String(p)), step2));
+};
+
+/* --- Step 3: robot pick-and-place --- */
+BSTEP.attach = next => {
+  $('buildTitle').textContent = 'Attach the springs';
+  const targets = [0,1,2,3,4,5].map(i => 62 + i*46);
+  bstage(`<svg viewBox="0 0 360 250">
+    <rect x="30" y="192" width="270" height="16" fill="#C8B27A"/>${T(165,224,'space transformer, ceramic, thousands of pads')}
+    ${targets.map(x => `<rect x="${x-7}" y="186" width="14" height="6" fill="#C9A24C"/>`).join('')}
+    <g id="bCross" transform="translate(${targets[0]},176)"><circle r="12" fill="none" stroke="#22B36A" stroke-width="1.5"/><path d="M-18 0 h36 M0 -18 v36" stroke="#22B36A" stroke-width="1"/></g>
+    <g id="bPlaced"></g>
+    ${armSVG('bArm', 330, 236)}
+    <rect x="300" y="20" width="44" height="26" rx="4" fill="#5C6B74"/><circle cx="322" cy="33" r="7" fill="#22B36A"/>${T(322,60,'camera')}
+  </svg>`);
+  bcontrols('<button id="bPlace" class="btn" type="button">Place the spring</button>');
+  bcaption('A cobot loaded the ceramic. Now the placement robot sweeps each spring over its pad. Tap when the crosshair is centred.');
+  const spring = '<path d="M0 0 l5 4 l-10 4 l10 4 l-10 4 l5 4" fill="none" stroke="#8A98A4" stroke-width="2"/>';
+  $('bArm-load').innerHTML = spring;
+  let idx = 0, x = 180; B.errs = [];
+  const t0 = performance.now();
+  const frame = t => {
+    if (!sweepOn) return;
+    if (!state.paused){ x = 180 + 130*Math.sin((t - t0)/950); setArm('bArm', 330, 236, 130, 115, x, 150); }
+    requestAnimationFrame(frame);
+  };
+  sweepOn = true; requestAnimationFrame(frame);
+  $('bPlace').addEventListener('click', () => {
+    if (!sweepOn) return;
+    sweepOn = false;
+    const err = Math.abs(x - targets[idx])*0.4;
+    B.errs.push(err);
+    const px = x;
+    anim(350, p => setArm('bArm', 330, 236, 130, 115, px, 150 + 32*easeOut(p)), () => {
+      $('bArm-load').innerHTML = '';
+      $('bPlaced').insertAdjacentHTML('beforeend', `<g transform="translate(${px.toFixed(1)},166)">${spring}</g>`);
+      bcaption(err < 3 ? `Off by ${err.toFixed(1)} µm. Good.` : err < 6 ? `Off by ${err.toFixed(1)} µm. It will bond, but the tip sits high.` : `Off by ${err.toFixed(1)} µm. That one is on the edge of its pad.`);
+      idx++;
+      anim(300, p => setArm('bArm', 330, 236, 130, 115, px, 182 - 32*easeOut(p)), () => {
+        if (idx >= targets.length){
+          bcontrols('<button id="bBond" class="btn" type="button">Bond them</button>');
+          $('bBond').addEventListener('click', () => {
+            anim(900, p => { $('bPlaced').setAttribute('opacity', String(0.6 + 0.4*Math.abs(Math.sin(p*Math.PI*3)))); }, () => {
+              const mean = B.errs.reduce((a, b) => a + b, 0)/B.errs.length;
+              bcaption(`Bonded. Average placement error ${mean.toFixed(1)} µm across ${B.errs.length} springs. A real card repeats this tens of thousands of times.`);
+              bcontrols('<button id="bAttachDone" class="btn" type="button">Continue</button>');
+              $('bAttachDone').addEventListener('click', () => showNote('pickplace', next));
+            });
+          });
+        } else {
+          $('bCross').setAttribute('transform', `translate(${targets[idx]},176)`);
+          $('bArm-load').innerHTML = spring;
+          sweepOn = true; requestAnimationFrame(frame);
+        }
+      });
+    });
+  });
+};
+
+/* --- Step 4: stack the card, with a cobot doing the lifting --- */
+const LAYERS = [
+  { n:'Probe springs', role:'The tips that touch the wafer. They go on first, on the wafer side.', color:'#8A98A4', h:8 },
+  { n:'Space transformer', role:'A multilayer ceramic that fans out from tens-of-micron pitch to the PCB\'s millimetre pitch.', color:'#C8B27A', h:14 },
+  { n:'Interposer', role:'A sheet of tiny springs that takes up the tolerance between the ceramic and the PCB so every channel connects.', color:'#DDE3E8', h:8 },
+  { n:'Printed circuit board', role:'A large multilayer board that carries thousands of signals out to the tester\'s pogo pins.', color:'#2E6B3F', h:14 },
+  { n:'Stiffener', role:'A metal frame that keeps the whole card flat under more than a hundred kilograms of spring force.', color:'#5C6B74', h:12 },
+];
+BSTEP.stack = next => {
+  $('buildTitle').textContent = 'Stack the card';
+  const rackY = i => 60 + i*30;
+  bstage(`<svg viewBox="0 0 360 250">
+    ${LAYERS.map((l, i) => `<rect id="rack${i}" x="40" y="${rackY(i)}" width="70" height="${l.h}" rx="2" fill="${l.color}"/>`).join('')}
+    ${T(75,46,'parts rack')}
+    <line x1="150" y1="210" x2="290" y2="210" stroke="#9AA9B5" stroke-width="3"/>${T(220,228,'assembly fixture, wafer side down')}
+    <g id="stackG"></g>
+    ${armSVG('bArm2', 330, 236)}
+  </svg>`);
+  const order = LAYERS.map((l, i) => i).sort(() => Math.random() - 0.5);
+  bcontrols(`<div class="stackbtns">${order.map(i => `<button class="btn ghost stackbtn" type="button" data-i="${i}">${LAYERS[i].n}</button>`).join('')}</div>`);
+  bcaption('Build it from the wafer side up. Which layer goes first?');
+  setArm('bArm2', 330, 236, 140, 125, 250, 120);
+  let want = 0, stackTop = 210, busy = false;
+  B.stackMistakes = 0;
+  document.querySelectorAll('.stackbtn').forEach(btn => btn.addEventListener('click', () => {
+    if (busy) return;
+    const i = +btn.dataset.i;
+    if (i !== want){
+      B.stackMistakes++;
+      btn.classList.remove('shake'); void btn.offsetWidth; btn.classList.add('shake');
+      bcaption(i < want ? `${LAYERS[i].n} is already on.` : `Not yet. Next on the stack: ${LAYERS[want].n.toLowerCase()}.`);
+      return;
+    }
+    busy = true; btn.disabled = true;
+    const l = LAYERS[i], rack = $(`rack${i}`), from = { x:75, y:rackY(i) }, to = { x:220, y:stackTop - l.h };
+    anim(450, p => setArm('bArm2', 330, 236, 140, 125, lerp(250, from.x, easeOut(p)), lerp(120, from.y, easeOut(p))), () => {
+      rack.remove();
+      $('bArm2-load').innerHTML = `<rect x="-35" y="10" width="70" height="${l.h}" rx="2" fill="${l.color}"/>`;
+      anim(650, p => setArm('bArm2', 330, 236, 140, 125, lerp(from.x, to.x, easeOut(p)), lerp(from.y, to.y - 10, easeOut(p))), () => {
+        $('bArm2-load').innerHTML = '';
+        $('stackG').insertAdjacentHTML('beforeend', `<rect x="185" y="${to.y}" width="70" height="${l.h}" rx="2" fill="${l.color}"/>`);
+        stackTop = to.y; want++; busy = false;
+        bcaption(l.role);
+        anim(300, p => setArm('bArm2', 330, 236, 140, 125, lerp(to.x, 250, p), lerp(to.y - 10, 120, p)));
+        if (want >= LAYERS.length){
+          bcontrols('<button id="bStackDone" class="btn" type="button">Card assembled</button>');
+          $('bStackDone').addEventListener('click', () => showNote('stack', next));
+        }
+      });
+    });
+  }));
+};
+
+/* --- Step 5: probe card analyzer --- */
+BSTEP.measure = next => {
+  $('buildTitle').textContent = 'Measure every tip';
+  const tips = [];
+  const highs = new Set(); while (highs.size < 6) highs.add(Math.floor(Math.random()*100));
+  for (let i = 0; i < 100; i++){
+    const high = highs.has(i);
+    const h = high ? 12 + Math.random()*8 : (Math.random() - 0.5)*7;
+    tips.push({ i, h, high, flagged:false });
+  }
+  const col = h => h > 10 ? '#E6583C' : h > 3 ? '#F0B43C' : h < -3 ? '#8FB3D9' : '#B8C2CB';
+  bstage(`<svg viewBox="0 0 360 300">
+    ${tips.map(t => `<circle class="tip" data-i="${t.i}" cx="${34 + (t.i%10)*32}" cy="${28 + Math.floor(t.i/10)*26}" r="10" fill="${col(t.h)}" stroke="#F2F5F7" stroke-width="2"/>`).join('')}
+    <line id="mScan" x1="20" y1="14" x2="340" y2="14" stroke="#0F7F8B" stroke-width="2" opacity="0"/>
+    ${T(180,292,'tip height map: red tips sit more than 10 µm high')}
+  </svg>`);
+  bcontrols('<button id="mRun" class="btn" type="button">Rework flagged tips and run the electrical test</button>');
+  bcaption('The analyzer measured the height of every tip. Tap the ones that sit too high so they get reworked before the card ships.');
+  document.querySelectorAll('.tip').forEach(c => c.addEventListener('click', () => {
+    const t = tips[+c.dataset.i]; t.flagged = !t.flagged;
+    c.setAttribute('stroke', t.flagged ? '#18242C' : '#F2F5F7'); c.setAttribute('stroke-width', t.flagged ? '3' : '2');
+  }));
+  $('mRun').addEventListener('click', () => {
+    B.found = tips.filter(t => t.high && t.flagged).length;
+    B.missed = tips.filter(t => t.high && !t.flagged).length;
+    B.falseFlags = tips.filter(t => !t.high && t.flagged).length;
+    tips.filter(t => t.flagged).forEach(t => { const c = document.querySelector(`.tip[data-i="${t.i}"]`); c.setAttribute('fill', '#B8C2CB'); c.setAttribute('stroke', '#F2F5F7'); c.setAttribute('stroke-width', '2'); });
+    bcontrols('');
+    $('mScan').setAttribute('opacity', '1');
+    anim(1400, p => { $('mScan').setAttribute('y1', (14 + 250*p).toFixed(1)); $('mScan').setAttribute('y2', (14 + 250*p).toFixed(1)); }, () => {
+      $('mScan').setAttribute('opacity', '0');
+      const res = B.force < 2 ? 'Contact resistance is high on most tips: the springs are too soft to break the oxide.' : 'Contact resistance is low on every tip.';
+      bcaption(`${B.found} of ${B.found + B.missed} high tips reworked${B.falseFlags ? `, ${B.falseFlags} good tips reworked for nothing` : ''}. ${res}`);
+      bcontrols('<button id="mDone" class="btn" type="button">Continue</button>');
+      $('mDone').addEventListener('click', () => showNote('analyzer', next));
+    });
+  });
+};
+
+/* --- Step 6: ship it --- */
+BSTEP.ship = next => {
+  $('buildTitle').textContent = 'Ship it';
+  bstage(`<svg viewBox="0 0 360 250">
+    <rect id="sCard" x="150" y="150" width="90" height="14" rx="3" fill="#2E6B3F"/>
+    <rect x="40" y="170" width="120" height="60" rx="4" fill="#C9D3DB" stroke="#9AA9B5"/><rect id="sLid" x="40" y="170" width="120" height="8" fill="#9AA9B5" transform="rotate(-70 40 170)"/>
+    ${T(100,246,'shipping case')}
+    ${armSVG('bArm3', 330, 236)}
+  </svg>`);
+  bcontrols('');
+  bcaption('The cobot packs the finished card. A fab on the other side of the world has wafers waiting for it.');
+  setArm('bArm3', 330, 236, 140, 125, 250, 120);
+  anim(500, p => setArm('bArm3', 330, 236, 140, 125, lerp(250, 195, easeOut(p)), lerp(120, 140, easeOut(p))), () => {
+    $('sCard').remove();
+    $('bArm3-load').innerHTML = '<rect x="-45" y="10" width="90" height="14" rx="3" fill="#2E6B3F"/>';
+    anim(900, p => setArm('bArm3', 330, 236, 140, 125, lerp(195, 100, easeOut(p)), lerp(140, 178, easeOut(p))), () => {
+      $('bArm3-load').innerHTML = '';
+      $('buildStage').querySelector('svg').insertAdjacentHTML('beforeend', '<rect x="55" y="188" width="90" height="14" rx="3" fill="#2E6B3F"/>');
+      anim(600, p => { $('sLid').setAttribute('transform', `rotate(${(-70*(1-p)).toFixed(1)} 40 170)`); setArm('bArm3', 330, 236, 140, 125, lerp(100, 250, p), lerp(178, 120, p)); }, () => showNote('ship', next));
+    });
+  });
+};
+
+function buildResult(){
+  state.buildStep = 0; setHeader();
+  const mean = B.errs.length ? B.errs.reduce((a, b) => a + b, 0)/B.errs.length : 3;
+  const planarity = 6 + mean*1.2 + B.missed*3;
+  const yieldPct = B.doseOk && B.plateOk ? 100 : (!B.doseOk && !B.plateOk ? 86 : 93);
+  const issues = [];
+  if (!B.forceOk) issues.push(B.force < 2 ? 'The springs are too soft: contact resistance is high and dies will read open.' : 'The springs are too stiff: the tips will crater pads on every touchdown.');
+  if (!B.doseOk) issues.push('The lithography dose was off, so some springs are sitting on resist scum and will lift.');
+  if (!B.plateOk) issues.push(B.plate < 40 ? 'Under-plated springs are too short to make contact.' : 'Over-plated springs mushroomed and will short to their neighbours.');
+  if (mean > 6) issues.push(`Placement error averaged ${mean.toFixed(1)} µm, so tip heights are all over the place.`);
+  if (B.missed > 0) issues.push(`${B.missed} high tips were never reworked and will hit the wafer first.`);
+  if (B.stackMistakes > 1) issues.push(`${B.stackMistakes} layers were picked in the wrong order on the line.`);
+  const grade = issues.length === 0 ? 'A' : issues.length === 1 ? 'B' : issues.length === 2 ? 'C' : 'F';
+  state.ch2Grade = grade;
+  $('bGrade').textContent = grade;
+  $('bGrade').style.color = grade === 'A' ? css('--pass') : grade === 'F' ? css('--fail') : css('--ink');
+  $('bTitle').textContent = grade === 'A' ? 'Card ships clean' : grade === 'F' ? 'Card fails outgoing inspection' : 'Card ships with rework';
+  $('bLesson').textContent = issues.length ? issues[0] + (issues.length > 1 ? ` Plus ${issues.length - 1} more problem${issues.length > 2 ? 's' : ''} on the spec sheet.` : '') : 'Force in the window, clean lithography, tight placement, every high tip caught. This is the card the fab wanted.';
+  $('bProbes').textContent = N_PROBES.toLocaleString();
+  $('bForceOut').textContent = `${B.force.toFixed(1)} gf`;
+  $('bTotalOut').textContent = `${(B.force*N_PROBES/1000).toFixed(0)} kg`;
+  $('bPlan').textContent = `±${(planarity/2).toFixed(0)} µm${planarity > 20 ? ' (spec ±10)' : ''}`;
+  $('bRes').textContent = B.force < 2 ? 'High' : 'Low';
+  $('bYield').textContent = `${yieldPct}%`;
+  $('bPlaceOut').textContent = `${mean.toFixed(1)} µm`;
+  B.summary = `I built a MEMS probe card in Wafer Guardian: ${N_PROBES.toLocaleString()} tips at ${B.force.toFixed(1)} gf each, planarity ±${(planarity/2).toFixed(0)} µm, grade ${grade}.`;
+  show('s-buildResult');
+}
+$('btnBuildAgain').addEventListener('click', () => { stopEverything(); startBuild(); });
+$('btnBuildShare').addEventListener('click', async () => {
+  const text = `${B.summary} Can you do better? ${location.href}`;
+  try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); $('btnBuildShare').textContent = 'Copied to clipboard'; } } catch (e) { /* cancelled */ }
+});
+
+setHeader();
+refreshHome();
+drawHero();
+</script>
+</body>
+</html>
