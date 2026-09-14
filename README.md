@@ -2,6 +2,8 @@
 
 A small browser game about wafer test and probe cards. Match the probe card to the chip, load the wafer, run the prober and catch the bad dies. Then build a MEMS probe card yourself: design the spring, grow it with lithography, let the robots assemble it, and measure every tip.
 
+Two reference pages sit alongside the game: **The industry** (who makes probe cards, where, with what technology and revenue, on a world map) and **The robotics case** (interactive models of why flexible automation beats dedicated cells as design cadence rises). Company figures come from 2025 filings and are marked where estimated; the robotics models are illustrative.
+
 Play it: https://theja2289.github.io/WaferGuardian/
 
 ## Run locally
