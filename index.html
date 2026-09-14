@@ -98,6 +98,19 @@
   .shake{animation:shake .3s}
   @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
   .tip{cursor:pointer}
+  .wslist{display:grid;gap:8px}
+  .wsrow{appearance:none;text-align:left;width:100%;background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;color:inherit;cursor:pointer;display:grid;gap:2px}
+  .wsrow-name{font-weight:700}
+  .wsrow-sub{color:var(--muted);font-size:13px}
+  .wsfields{display:grid;gap:10px}
+  .wsf{display:grid;gap:4px;font-size:14px;color:var(--muted)}
+  .wsf input[type=number],.wsf input[type=text],.wsf select{font:inherit;font-size:16px;color:var(--ink);padding:9px 10px;border:1.5px solid var(--line);border-radius:9px;background:var(--panel);width:100%}
+  .wscheck{display:flex;align-items:center;gap:9px;color:var(--ink);font-size:15px}
+  .wscheck input{width:20px;height:20px;accent-color:var(--accent)}
+  .wsmulti{display:flex;flex-wrap:wrap;gap:12px;color:var(--ink);font-size:15px}
+  .wsmulti label{display:flex;align-items:center;gap:6px}
+  .wsmulti input{width:18px;height:18px;accent-color:var(--accent)}
+  .wsjson{width:100%;min-height:190px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.4;border:1.5px solid var(--line);border-radius:10px;padding:10px;background:#F8FAFB;color:var(--ink);resize:vertical}
   .pane{display:contents}
   .foot{color:var(--muted);font-size:12px;margin-top:24px}
   @media (min-width:900px){
@@ -120,6 +133,9 @@
     .specs{grid-template-columns:repeat(3,1fr)}
     .note{right:36px;left:auto;max-width:460px;border-radius:16px 16px 0 0}
     .nblist{grid-template-columns:1fr 1fr}
+    .wslist{grid-template-columns:1fr 1fr}
+    .wsfields{grid-template-columns:1fr 1fr;column-gap:18px}
+    .wsjson{min-height:240px}
     .hud b{font-size:20px}
   }
   @media (min-width:900px) and (prefers-reduced-motion:no-preference){
@@ -145,6 +161,7 @@
     <button class="chapter" id="btnCh1" type="button"><span class="chapter-name">Run the prober</span><span class="chapter-grade" id="ch1Grade"></span><span class="chapter-sub">Four chips, three probe cards. Match them, load the wafer, catch the bad dies.</span></button>
     <button class="chapter" id="btnCh2" type="button"><span class="chapter-name">Build a probe card</span><span class="chapter-grade" id="ch2Grade"></span><span class="chapter-sub">Design the spring, grow it with lithography, let the robots assemble it, measure every tip.</span></button>
     <button class="chapter" id="btnNotes" type="button"><span class="chapter-name">Field notebook</span><span class="chapter-grade"></span><span class="chapter-sub" id="nbCount"></span></button>
+    <button class="chapter" id="btnWorkshop" type="button"><span class="chapter-name">Workshop</span><span class="chapter-grade"></span><span class="chapter-sub" id="wsCount"></span></button>
     </div>
   </section>
 
@@ -153,6 +170,35 @@
     <p class="caption">Tap a note to read it again. The locked ones are still out there in the game.</p>
     <div class="nblist" id="noteList"></div>
     <button id="btnNotesHome" class="btn ghost" type="button">Back home</button>
+  </section>
+
+  <section id="s-workshop" class="screen center hidden">
+    <h2>Workshop</h2>
+    <p class="caption">These are the tables the game plays from. Change a number, add a chip, and the next run uses it. Everything stays in this browser.</p>
+    <p class="status" id="wsNote"></p>
+    <h3>Chips</h3>
+    <div class="wslist" id="wsChips"></div>
+    <button id="wsAddChip" class="btn ghost small" type="button">Add a chip</button>
+    <h3>Probe cards</h3>
+    <div class="wslist" id="wsCards"></div>
+    <button id="wsAddCard" class="btn ghost small" type="button">Add a probe card</button>
+
+    <div class="panel hidden" id="wsEditor">
+      <h3 id="wsEditTitle"></h3>
+      <div class="wsfields" id="wsFields"></div>
+      <button id="wsSave" class="btn" type="button">Save</button>
+      <button id="wsTest" class="btn ghost" type="button">Save and test this chip now</button>
+      <button id="wsDelete" class="btn ghost" type="button">Remove it</button>
+    </div>
+
+    <button id="wsIoBtn" class="btn ghost small" type="button">Export or import as JSON</button>
+    <div class="panel hidden" id="wsIo">
+      <textarea id="wsJson" class="wsjson" spellcheck="false" aria-label="Chips and cards as JSON"></textarea>
+      <button id="wsCopyJson" class="btn ghost small" type="button">Copy</button>
+      <button id="wsLoadJson" class="btn" type="button">Load this JSON</button>
+    </div>
+    <button id="wsReset" class="btn ghost" type="button">Reset to the built-in tables</button>
+    <button id="btnWsHome" class="btn ghost" type="button">Back home</button>
   </section>
 
   <section id="s-build" class="screen split hidden">
@@ -300,7 +346,7 @@
    layout: 'edge' | 'center' | 'array'    maxSites: dies per touchdown the die size allows
    fullOK: a full-wafer card can test every die in one touchdown (memory)
    ===================================================================== */
-const CHIPS = [
+const DEFAULT_CHIPS = [
   { id:'mcu', name:'Microcontroller',
     tagline:'The small chip inside a washing machine, a car door, a game controller.',
     layout:'edge', layoutLabel:'A ring of pads along the edge',
@@ -331,7 +377,7 @@ const CHIPS = [
     time:35, unit:'AI accelerators' },
 ];
 
-const CARDS = [
+const DEFAULT_CARDS = [
   { id:'cant', name:'Cantilever needle card',
     tech:'Tungsten needles set in an epoxy ring. A 1970s design, still everywhere on simple chips.',
     minPitch:60, layouts:['edge','center'], reach:'edge and center-row pads',
@@ -348,6 +394,9 @@ const CARDS = [
     sites:3, fullWafer:true, maxCurrent:3, currentLabel:'high', od:[25,50],
     waferCost:150, touchdownCost:1.5, touchdownMs:650 },
 ];
+
+let CHIPS = JSON.parse(JSON.stringify(DEFAULT_CHIPS));
+let CARDS = JSON.parse(JSON.stringify(DEFAULT_CARDS));
 
 /* ---------- Figures (inline SVG) ---------- */
 const WG = `<defs><linearGradient id="wg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4A5A68"/><stop offset="1" stop-color="#26323B"/></linearGradient>
@@ -624,10 +673,10 @@ function openBrief(){
         <li>On this chip: ${modeLabel(chip, card)}, ${money(card.touchdownCost)} per touchdown</li>
         <li>Carries ${card.currentLabel} current</li>
       </ul>
-      <div class="xsec hidden">${XSEC[card.id]}</div>`;
+      ${XSEC[card.id] ? `<div class="xsec hidden">${XSEC[card.id]}</div>` : ''}`;
     el.addEventListener('click', () => {
       state.card = card;
-      list.querySelectorAll('.card').forEach(c => { c.setAttribute('aria-pressed', String(c === el)); c.querySelector('.xsec').classList.toggle('hidden', c !== el); });
+      list.querySelectorAll('.card').forEach(c => { c.setAttribute('aria-pressed', String(c === el)); const x = c.querySelector('.xsec'); if (x) x.classList.toggle('hidden', c !== el); });
       state.seen.add('card-' + card.id); setHeader();
       $('btnLoad').disabled = false;
     });
@@ -1150,6 +1199,7 @@ function refreshHome(){
   $('ch1Grade').textContent = state.ch1Grade || '';
   $('ch2Grade').textContent = state.ch2Grade || '';
   $('nbCount').textContent = `${state.seen.size} of ${NOTE_TOTAL} collected`;
+  $('wsCount').textContent = `Edit the ${CHIPS.length} chips and ${CARDS.length} probe cards the game plays from, or add your own.`;
 }
 function goHome(){ stopEverything(); state.chip = null; setHeader(); refreshHome(); show('s-home'); drawHero(); }
 $('btnHome').addEventListener('click', goHome);
@@ -1562,6 +1612,176 @@ $('btnBuildShare').addEventListener('click', async () => {
   try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); $('btnBuildShare').textContent = 'Copied to clipboard'; } } catch (e) { /* cancelled */ }
 });
 
+/* =====================================================================
+   Workshop: edit the CHIPS and CARDS tables from inside the game
+   ===================================================================== */
+const LAYOUT_LABELS = { edge:'A ring of pads along the edge', center:'One row of pads down the middle', array:'Bumps across the whole die' };
+const CUR_LABELS = { 1:'Low', 2:'Medium', 3:'High' };
+const STORE_KEY = 'wafer-guardian-tables';
+const clone = o => JSON.parse(JSON.stringify(o));
+
+function reachText(layouts){
+  if (layouts.length === 3) return 'any pad layout';
+  const names = { edge:'edge pads', center:'center-row pads', array:'full arrays' };
+  const list = layouts.map(l => names[l]);
+  return list.length > 1 ? list.slice(0, -1).join(', ') + ' and ' + list[list.length-1] : (list[0] || 'nothing');
+}
+function saveTables(){
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({ chips:CHIPS, cards:CARDS })); } catch (e) { /* private mode */ }
+}
+function loadTables(){
+  try {
+    const raw = localStorage.getItem(STORE_KEY); if (!raw) return;
+    const d = JSON.parse(raw);
+    if (Array.isArray(d.chips) && d.chips.length) CHIPS = d.chips;
+    if (Array.isArray(d.cards) && d.cards.length) CARDS = d.cards;
+  } catch (e) { /* ignore corrupt storage */ }
+}
+function resetTables(){ CHIPS = clone(DEFAULT_CHIPS); CARDS = clone(DEFAULT_CARDS); saveTables(); }
+
+const CHIP_FIELDS = [
+  { k:'name', t:'text', l:'Name' },
+  { k:'tagline', t:'text', l:'One line about the chip' },
+  { k:'layout', t:'select', l:'Pad layout', opts:[['edge','Ring along the edge'],['center','Row down the middle'],['array','Array across the die']] },
+  { k:'pitch', t:'num', l:'Pad pitch (µm)', min:20, max:200, step:5 },
+  { k:'grid', t:'num', l:'Dies across the wafer', min:3, max:21, step:2 },
+  { k:'failRate', t:'num', l:'Base fail rate (0 to 0.5)', min:0, max:0.5, step:0.01 },
+  { k:'edgeLoss', t:'num', l:'Extra failures at the edge', min:0, max:0.6, step:0.02 },
+  { k:'clusters', t:'num', l:'Defect clusters', min:0, max:4, step:1 },
+  { k:'current', t:'select', l:'Current during test', opts:[[1,'Low'],[2,'Medium'],[3,'High']] },
+  { k:'temp', t:'num', l:'Test temperature (°C)', min:-55, max:150, step:5 },
+  { k:'dieValue', t:'num', l:'Value per good die ($)', min:1, max:20000, step:1 },
+  { k:'escapeCost', t:'num', l:'Cost of one escape ($)', min:1, max:200000, step:10 },
+  { k:'testMs', t:'num', l:'Test time per touchdown (ms)', min:100, max:5000, step:50 },
+  { k:'fullOK', t:'check', l:'A full-wafer card can test it in one touchdown' },
+  { k:'fullTestMs', t:'num', l:'Test time for a full-wafer touchdown (ms)', min:500, max:20000, step:250 },
+  { k:'maxSites', t:'num', l:'Most dies per touchdown (per side)', min:1, max:4, step:1 },
+  { k:'time', t:'num', l:'Shift length (seconds)', min:10, max:120, step:5 },
+  { k:'unit', t:'text', l:'Plural name for the finished chip' },
+];
+const CARD_FIELDS = [
+  { k:'name', t:'text', l:'Name' },
+  { k:'tech', t:'text', l:'How it is built' },
+  { k:'minPitch', t:'num', l:'Finest pitch it can reach (µm)', min:10, max:200, step:5 },
+  { k:'layouts', t:'multi', l:'Pad layouts it reaches', opts:[['edge','Edge'],['center','Center row'],['array','Array']] },
+  { k:'sites', t:'num', l:'Dies per touchdown (per side)', min:1, max:4, step:1 },
+  { k:'fullWafer', t:'check', l:'Can contact a whole wafer at once' },
+  { k:'maxCurrent', t:'select', l:'Current it can carry', opts:[[1,'Low'],[2,'Medium'],[3,'High']] },
+  { k:'od0', t:'num', l:'Overdrive window, low (µm)', min:0, max:150, step:5 },
+  { k:'od1', t:'num', l:'Overdrive window, high (µm)', min:5, max:200, step:5 },
+  { k:'waferCost', t:'num', l:'Cost per wafer ($)', min:0, max:2000, step:1 },
+  { k:'touchdownCost', t:'num', l:'Cost per touchdown ($)', min:0, max:50, step:0.1 },
+  { k:'touchdownMs', t:'num', l:'Time to touch down (ms)', min:100, max:3000, step:50 },
+];
+
+let wsKind = 'chip', wsIdx = -1;
+
+function openWorkshop(){
+  stopEverything(); state.chip = null; setHeader();
+  wsIdx = -1; $('wsEditor').classList.add('hidden'); $('wsIo').classList.add('hidden');
+  renderWsLists(); show('s-workshop');
+}
+function renderWsLists(){
+  const mk = (arr, kind) => arr.map((o, i) => {
+    const sub = kind === 'chip'
+      ? `${o.pitch} µm pitch, ${LAYOUT_LABELS[o.layout].toLowerCase()}, ${o.grid}×${o.grid} wafer`
+      : `${o.minPitch} µm and up, ${reachText(o.layouts)}, ${o.fullWafer ? 'full wafer' : o.sites + '×' + o.sites + ' per touchdown'}`;
+    return `<button class="wsrow" type="button" data-kind="${kind}" data-i="${i}"><span class="wsrow-name">${o.name}</span><span class="wsrow-sub">${sub}</span></button>`;
+  }).join('');
+  $('wsChips').innerHTML = mk(CHIPS, 'chip');
+  $('wsCards').innerHTML = mk(CARDS, 'card');
+  document.querySelectorAll('.wsrow').forEach(b => b.addEventListener('click', () => openEditor(b.dataset.kind, +b.dataset.i)));
+}
+function fieldHTML(f, o){
+  const v = f.k === 'od0' ? o.od[0] : f.k === 'od1' ? o.od[1] : o[f.k];
+  if (f.t === 'check') return `<label class="wsf wscheck"><input type="checkbox" id="wsf-${f.k}" ${v ? 'checked' : ''}><span>${f.l}</span></label>`;
+  if (f.t === 'select') return `<label class="wsf"><span>${f.l}</span><select id="wsf-${f.k}">${f.opts.map(([val, lab]) => `<option value="${val}" ${String(val) === String(v) ? 'selected' : ''}>${lab}</option>`).join('')}</select></label>`;
+  if (f.t === 'multi') return `<div class="wsf"><span>${f.l}</span><div class="wsmulti">${f.opts.map(([val, lab]) => `<label><input type="checkbox" data-multi="${f.k}" value="${val}" ${v.includes(val) ? 'checked' : ''}><span>${lab}</span></label>`).join('')}</div></div>`;
+  if (f.t === 'text') return `<label class="wsf"><span>${f.l}</span><input type="text" id="wsf-${f.k}" value="${String(v ?? '').replace(/"/g, '&quot;')}"></label>`;
+  return `<label class="wsf"><span>${f.l}</span><input type="number" id="wsf-${f.k}" value="${v ?? ''}" min="${f.min}" max="${f.max}" step="${f.step}"></label>`;
+}
+function openEditor(kind, i){
+  wsKind = kind; wsIdx = i;
+  const arr = kind === 'chip' ? CHIPS : CARDS, o = arr[i], fields = kind === 'chip' ? CHIP_FIELDS : CARD_FIELDS;
+  $('wsEditTitle').textContent = o.name;
+  $('wsFields').innerHTML = fields.map(f => fieldHTML(f, o)).join('');
+  $('wsTest').classList.toggle('hidden', kind !== 'chip');
+  $('wsDelete').disabled = arr.length <= 1;
+  $('wsEditor').classList.remove('hidden');
+  $('wsEditor').scrollIntoView({ block:'start', behavior: reduced ? 'auto' : 'smooth' });
+}
+function readEditor(){
+  const fields = wsKind === 'chip' ? CHIP_FIELDS : CARD_FIELDS;
+  const arr = wsKind === 'chip' ? CHIPS : CARDS, o = arr[wsIdx], out = {};
+  for (const f of fields){
+    if (f.t === 'multi'){
+      out[f.k] = [...document.querySelectorAll(`[data-multi="${f.k}"]`)].filter(c => c.checked).map(c => c.value);
+      if (!out[f.k].length) out[f.k] = ['edge'];
+      continue;
+    }
+    const el = $(`wsf-${f.k}`); if (!el) continue;
+    if (f.t === 'check') out[f.k] = el.checked;
+    else if (f.t === 'num') out[f.k] = clamp(Number(el.value) || 0, f.min, f.max);
+    else if (f.t === 'select') out[f.k] = isNaN(+f.opts[0][0]) ? el.value : +el.value;
+    else out[f.k] = el.value.trim() || o[f.k];
+  }
+  if (wsKind === 'chip'){
+    out.grid = Math.max(3, Math.round(out.grid));
+    out.layoutLabel = LAYOUT_LABELS[out.layout];
+    out.currentLabel = CUR_LABELS[out.current];
+    out.fullTestMs = out.fullTestMs || out.testMs*3;
+    Object.assign(o, out);
+  } else {
+    out.od = [out.od0, Math.max(out.od0 + 5, out.od1)]; delete out.od0; delete out.od1;
+    out.currentLabel = CUR_LABELS[out.maxCurrent].toLowerCase();
+    out.reach = reachText(out.layouts) + (out.minPitch <= 30 ? ', down to micro-bumps' : '');
+    Object.assign(o, out);
+  }
+  saveTables();
+}
+$('wsSave').addEventListener('click', () => { readEditor(); renderWsLists(); $('wsNote').textContent = 'Saved. It will show up next time you play.'; });
+$('wsTest').addEventListener('click', () => { if (wsKind !== 'chip') return; readEditor(); state.totals = { profit:0, escapes:0, shipped:{} }; state.results = []; state.level = wsIdx; openBrief(); });
+$('wsDelete').addEventListener('click', () => {
+  const arr = wsKind === 'chip' ? CHIPS : CARDS;
+  if (arr.length <= 1) return;
+  arr.splice(wsIdx, 1); saveTables(); wsIdx = -1;
+  $('wsEditor').classList.add('hidden'); renderWsLists();
+  $('wsNote').textContent = 'Removed.';
+});
+$('wsAddChip').addEventListener('click', () => {
+  CHIPS.push(Object.assign(clone(DEFAULT_CHIPS[0]), { id:'chip' + Date.now(), name:'New chip', tagline:'Describe what this chip does.', unit:'chips' }));
+  saveTables(); renderWsLists(); openEditor('chip', CHIPS.length - 1);
+});
+$('wsAddCard').addEventListener('click', () => {
+  CARDS.push(Object.assign(clone(DEFAULT_CARDS[0]), { id:'card' + Date.now(), name:'New probe card', tech:'Describe how this card is built.' }));
+  saveTables(); renderWsLists(); openEditor('card', CARDS.length - 1);
+});
+$('wsReset').addEventListener('click', () => {
+  resetTables(); wsIdx = -1; $('wsEditor').classList.add('hidden'); renderWsLists();
+  $('wsNote').textContent = 'Back to the four chips and three cards the game ships with.';
+});
+$('wsIoBtn').addEventListener('click', () => {
+  const box = $('wsIo');
+  box.classList.toggle('hidden');
+  if (!box.classList.contains('hidden')) $('wsJson').value = JSON.stringify({ chips:CHIPS, cards:CARDS }, null, 1);
+});
+$('wsLoadJson').addEventListener('click', () => {
+  try {
+    const d = JSON.parse($('wsJson').value);
+    if (!Array.isArray(d.chips) || !d.chips.length || !Array.isArray(d.cards) || !d.cards.length) throw new Error('needs a chips list and a cards list');
+    CHIPS = d.chips; CARDS = d.cards; saveTables(); renderWsLists();
+    $('wsNote').textContent = `Loaded ${CHIPS.length} chips and ${CARDS.length} probe cards.`;
+  } catch (e) {
+    $('wsNote').textContent = `That JSON didn't load: ${e.message}`;
+  }
+});
+$('wsCopyJson').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($('wsJson').value); $('wsCopyJson').textContent = 'Copied'; setTimeout(() => { $('wsCopyJson').textContent = 'Copy'; }, 1500); } catch (e) { $('wsJson').select(); }
+});
+$('btnWorkshop').addEventListener('click', openWorkshop);
+$('btnWsHome').addEventListener('click', goHome);
+
+loadTables();
 setHeader();
 refreshHome();
 drawHero();
